@@ -32,6 +32,19 @@ it needs GIS packages: `pip install -r scripts/geo/requirements.txt` and then
 `python3 scripts/geo/build_ballot_areas.py`. See `data/raw/geo/README.md` for sources and
 licences (the 2022 venue list is CC BY-NC-SA 4.0).
 
+The published vote-flow estimates come from a stratified Bayesian model fitted offline
+(`scripts/ei/bayes_flows.py`, NumPyro; about 15 minutes on 16 cores for both levels):
+
+```sh
+uv venv -p 3.12 .venv-ei && VIRTUAL_ENV=.venv-ei uv pip install -r scripts/ei/requirements.txt
+python3 scripts/flows.py                       # writes flows_units_*.csv
+.venv-ei/bin/python scripts/ei/bayes_flows.py --level bloc
+.venv-ei/bin/python scripts/ei/bayes_flows.py --level list
+python3 scripts/flows.py && python3 scripts/build_dashboard.py
+```
+
+Its posterior draws are committed, so CI only reruns the standard-library steps.
+
 Pushes to `main` rebuild and deploy to GitHub Pages through
 `.github/workflows/pages.yml` (Settings → Pages → Source: GitHub Actions).
 
@@ -48,6 +61,7 @@ src/styles.css       Styles
 src/index.template.html
 scripts/             analyze.py, flows.py, build_dashboard.py, verify_manifest.py, xlsx.py
 scripts/geo/         Offline ballot-box → statistical-area join (GIS packages)
+scripts/ei/          Offline stratified Bayesian vote-flow model (NumPyro)
 archive/             Earlier chart reports; their CSVs are independent controls for analyze.py
 docs/                Methodology, data dictionary, validation, deployment notes
 vendor/              Pinned Apache ECharts 5.6.0

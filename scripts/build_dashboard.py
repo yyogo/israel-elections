@@ -67,7 +67,8 @@ def build_data():
             audit = json.loads((DERIVED / str(year) / 'audit.json').read_text(encoding='utf-8'))
             data['years'][year]['areaBasis'] = audit['area_basis_valid_votes']
     data['settlements'] = sorted(data['settlements'].values(), key=lambda s: s['code'])
-    data['flows'] = json.loads((DERIVED / 'flows.json').read_text(encoding='utf-8'))
+    flows = json.loads((DERIVED / 'flows.json').read_text(encoding='utf-8'))
+    data['flows'] = {level: flows[level] for level in ('bloc', 'list')}
     for level in data['flows'].values():
         level['diagnostics'].pop('raw_transition', None)
     return data

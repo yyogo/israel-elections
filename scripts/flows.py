@@ -213,6 +213,27 @@ def percentile(values, q):
     return values[lo] + (values[hi] - values[lo]) * (pos - lo)
 
 
+def unit_clusters():
+    """Socioeconomic cluster per unit: statistical-area cluster where split, else the locality's."""
+    _, rows = read_settlements(2026)
+    clusters = {(int(r['settlement_code']), ''): r['cluster'] for r in rows}
+    for r in read_areas(2026) or []:
+        if r['stat11']:
+            clusters[int(r['settlement_code']), r['stat11']] = r['area_cluster']
+    return clusters
+
+
+def export_units(level, keys, rows22, cols26, units22, units26):
+    """Unit-level counts for the offline Bayesian model (scripts/ei/bayes_flows.py)."""
+    clusters = unit_clusters()
+    with (OUT / f'flows_units_{level}.csv').open('w', encoding='utf-8', newline='') as f:
+        w = csv.writer(f)
+        w.writerow(['settlement_code', 'stat11', 'cluster', 'eligible_2022', 'eligible_2026'] +
+                   [f'2022:{c}' for c in rows22] + [f'2026:{c}' for c in cols26])
+        for k in keys:
+            w.writerow([k[0], k[1], clusters.get(k, ''), units22[k][0], units26[k][0], *units22[k][1], *units26[k][1]])
+
+
 def estimate(level, parties):
     areas22, areas26 = read_areas(2022), read_areas(2026)
     split = frozenset(unit_keys(areas22, areas26)) if areas22 and areas26 else frozenset()
@@ -222,6 +243,8 @@ def estimate(level, parties):
     xs = [[v / units22[k][0] for v in units22[k][1]] for k in keys]
     ys = [[v / units26[k][0] for v in units26[k][1]] for k in keys]
     ws = [(units22[k][0] + units26[k][0]) / 2 for k in keys]
+
+    export_units(level, keys, rows22, cols26, units22, units26)
 
     T = fit(xs, ys, ws)
     F = rake(T, nat22, nat26)
@@ -271,16 +294,73 @@ def estimate(level, parties):
     }
 
 
+def summarise(level, rows22, cols26, nat22, nat26, draws, point=None):
+    """Flows, intervals and net exchange from a list of raked flow matrices (one per draw)."""
+    n = len(draws)
+    mean = [[sum(d[a][k] for d in draws) / n for k in range(len(cols26))] for a in range(len(rows22))]
+    F = point or mean
+    pairs, net = [], None
+    if level == 'bloc':
+        pos = {c: k for k, c in enumerate(cols26)}
+        pairs = [(a, b) for a in range(len(rows22)) for b in range(a + 1, len(rows22))
+                 if rows22[a] in pos and rows22[b] in pos]
+        net = lambda M, a, b: M[a][pos[rows22[b]]] - M[b][pos[rows22[a]]]
+    flows = []
+    for a, source in enumerate(rows22):
+        for k, target in enumerate(cols26):
+            votes = [d[a][k] for d in draws]
+            shares = [v / nat22[a] if nat22[a] else 0 for v in votes]
+            flows.append({'from': source, 'to': target, 'value': round(F[a][k]),
+                          'share_of_source': F[a][k] / nat22[a] if nat22[a] else 0,
+                          'ci90': [percentile(shares, 0.05), percentile(shares, 0.95)],
+                          'ci90_votes': [round(percentile(votes, q)) for q in (0.05, 0.95)]})
+    nets = [{'a': rows22[a], 'b': rows22[b], 'net': round(net(F, a, b)),
+             'ci90': [round(percentile([net(d, a, b) for d in draws], q)) for q in (0.05, 0.95)]} for a, b in pairs]
+    return flows, nets
+
+
+def bayes_estimate(level, lsq):
+    """Combine the per-stratum posterior draws of scripts/ei/bayes_flows.py, draw by draw."""
+    path = OUT / f'flows_bayes_{level}.json'
+    if not path.exists():
+        return None
+    post = json.loads(path.read_text(encoding='utf-8'))
+    rows22 = [s['id'] for s in lsq['sources']]
+    cols26 = [s['id'] for s in lsq['targets']]
+    assert post['rows'] == rows22 and post['cols'] == cols26, 'rerun scripts/ei/bayes_flows.py'
+    nat22 = [s['total'] for s in lsq['sources']]
+    nat26 = [s['total'] for s in lsq['targets']]
+    draws = []
+    for i in range(min(len(s['samples']) for s in post['strata'])):
+        # National flow = sum over strata of (2022 group size x stratum transition), then raked.
+        F0 = [[sum(s['group_totals_2022'][a] * s['samples'][i][a][k] for s in post['strata'])
+               for k in range(len(cols26))] for a in range(len(rows22))]
+        T = [[v / sum(row) if sum(row) else 1 / len(row) for v in row] for row in F0]
+        draws.append(rake(T, nat22, nat26, rounds=200))
+    flows, nets = summarise(level, rows22, cols26, nat22, nat26, draws)
+    lsq_share = {(f['from'], f['to']): f['share_of_source'] for f in lsq['flows']}
+    for f in flows:
+        f['lsq_share_of_source'] = lsq_share[f['from'], f['to']]
+    return {**lsq, 'flows': flows, 'net': nets, 'model': 'bayes',
+            'diagnostics': {'units': lsq['diagnostics']['units'], 'model': post['model'], 'draws': len(draws),
+                            'strata': [{'name': s['name'], **s['diagnostics']} for s in post['strata']],
+                            'lsq_weighted_r2': lsq['diagnostics']['weighted_r2']}}
+
+
 def main():
     parties = json.loads((ROOT / 'src/parties.json').read_text(encoding='utf-8'))
-    result = {level: estimate(level, parties) for level in ('bloc', 'list')}
+    lsq = {level: estimate(level, parties) for level in ('bloc', 'list')}
+    # The Bayesian stratified model is the published estimate when its offline output exists;
+    # the least-squares fit stays available for comparison.
+    result = {level: bayes_estimate(level, lsq[level]) or {**lsq[level], 'model': 'lsq'} for level in lsq}
+    result['lsq'] = lsq
     (OUT / 'flows.json').write_text(json.dumps(result, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
     with (OUT / 'flows.csv').open('w', encoding='utf-8', newline='') as f:
         w = csv.writer(f)
         w.writerow(['level', 'from_2022', 'to_2026', 'estimated_votes', 'votes_ci90_low', 'votes_ci90_high',
                     'share_of_source', 'ci90_low', 'ci90_high'])
-        for level, r in result.items():
-            for x in r['flows']:
+        for level in ('bloc', 'list'):
+            for x in result[level]['flows']:
                 w.writerow([level, x['from'], x['to'], x['value'], *x['ci90_votes'], f"{x['share_of_source']:.4f}",
                             f"{x['ci90'][0]:.4f}", f"{x['ci90'][1]:.4f}"])
     with (OUT / 'flows_net.csv').open('w', encoding='utf-8', newline='') as f:
@@ -288,8 +368,8 @@ def main():
         w.writerow(['bloc_a', 'bloc_b', 'net_votes_a_to_b', 'ci90_low', 'ci90_high'])
         for x in result['bloc']['net']:
             w.writerow([x['a'], x['b'], x['net'], *x['ci90']])
-    for level, r in result.items():
-        print(level, json.dumps({k: v for k, v in r['diagnostics'].items() if k != 'raw_transition'}))
+    for level in ('bloc', 'list'):
+        print(level, result[level]['model'], json.dumps({k: v for k, v in result[level]['diagnostics'].items() if k != 'raw_transition'}))
 
 
 if __name__ == '__main__':

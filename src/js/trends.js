@@ -114,7 +114,7 @@ function renderSankey() {
   svg.querySelectorAll('.flow').forEach(p => {
     const f = model.flows[+p.dataset.flow];
     const from = flowNodeInfo(Y0, f.from).label, to = flowNodeInfo(Y1, f.to).label;
-    const ci = `${pct(f.ci90[0], 0)}–${pct(f.ci90[1], 0)}`;
+    const ci = span(pct(f.ci90[0], 0), pct(f.ci90[1], 0));
     p.addEventListener('pointermove', e => {
       highlight(q => q === p);
       tooltip.show(esc(T.trends.flowTip(from, to, pct(f.share_of_source, 0), ci, fmt(f.value))), e);
@@ -131,7 +131,9 @@ function renderSankey() {
   });
 
   const d = model.diagnostics;
-  $('sankey-note').textContent = T.trends.fitNote(d.weighted_r2.toFixed(2), trendState.level === 'bloc' ? T.trends.levelBloc : T.trends.levelList);
+  $('sankey-note').textContent = d.strata
+    ? T.shifts.modelNote(d.strata.length, fmt(d.units))
+    : T.trends.fitNote(d.weighted_r2.toFixed(2), trendState.level === 'bloc' ? T.trends.levelBloc : T.trends.levelList);
   $('sankey-caveat').hidden = trendState.level !== 'list';
   renderFlowTable(model, keep);
 }
@@ -141,7 +143,7 @@ function renderFlowTable(model, keep) {
     .sort((a, b) => b.value - a.value);
   $('flow-table').innerHTML = `<thead><tr><th>${Y0}</th><th>${Y1}</th><th>${T.votes}</th><th>%</th><th>90%</th></tr></thead><tbody>` +
     rows.map(f => `<tr><th>${esc(flowNodeInfo(Y0, f.from).label)}</th><th>${esc(flowNodeInfo(Y1, f.to).label)}</th>` +
-      `<td>${fmt(f.value)}</td><td>${pct(f.share_of_source)}</td><td>${pct(f.ci90[0], 0)}–${pct(f.ci90[1], 0)}</td></tr>`).join('') + '</tbody>';
+      `<td>${fmt(f.value)}</td><td>${pct(f.share_of_source)}</td><td>${span(pct(f.ci90[0], 0), pct(f.ci90[1], 0))}</td></tr>`).join('') + '</tbody>';
 }
 
 // --- Change by cluster -------------------------------------------------------------
@@ -274,10 +276,14 @@ function nodeBloc(year, id) {
   return YEAR[year].parties.find(p => p.code === id)?.bloc ?? 'other';
 }
 
-// A flow pinned at zero in every bootstrap replicate sits on the model's boundary: the data
-// cannot separate it from turnout changes, so it is shown as "not identified", not as 0 ± 0.
-const atBoundary = f => f.ci90[1] < 0.003;
+// Negligible: even the top of the 90% interval is under half a percent of the source group.
+const atBoundary = f => f.ci90[1] < 0.005;
 const notDistinct = f => !atBoundary(f) && f.ci90[0] < 0.003;
+
+// The intervals are conditional on the model; when the simpler model lands well outside them,
+// the choice of model matters more than the interval suggests.
+const modelsDisagree = f => f.lsq_share_of_source !== undefined &&
+  (f.lsq_share_of_source < f.ci90[0] - 0.02 || f.lsq_share_of_source > f.ci90[1] + 0.02);
 
 function shiftLabel(f) {
   return `${flowNodeInfo(Y0, f.from).short} ${ARROW} ${flowNodeInfo(Y1, f.to).short}`;
@@ -319,7 +325,7 @@ function renderMatrix() {
       const same = nodeBloc(Y0, r.id) === nodeBloc(Y1, c.id);
       const fill = atBoundary(f) ? '#ffffff' : shade(v);
       const ink = v > 0.45 ? '#fff' : '#17384a';
-      out += `<g class="matrix-cell${notDistinct(f) ? ' weak' : ''}${atBoundary(f) ? ' boundary' : ''}" data-flow="${i}">` +
+      out += `<g class="matrix-cell${notDistinct(f) ? ' weak' : ''}${atBoundary(f) ? ' boundary' : ''}${modelsDisagree(f) ? ' disagree' : ''}" data-flow="${i}">` +
         `<rect x="${x + 1}" y="${y + 1}" width="${cell - 2}" height="${cell - 2}" rx="3" fill="${fill}" class="${same ? 'same-bloc' : ''}"/>`;
       if (atBoundary(f)) {
         out += `<text x="${x + cell / 2}" y="${y + cell / 2 + 4}" text-anchor="middle" class="cell-zero">·</text>`;
@@ -350,11 +356,13 @@ function shade(v) {
 
 function flowTooltip(f) {
   const from = flowNodeInfo(Y0, f.from).label, to = flowNodeInfo(Y1, f.to).label;
-  if (atBoundary(f)) return esc(T.shifts.boundaryTip(from, to));
-  const ci = `${pct(f.ci90[0], 0)}–${pct(f.ci90[1], 0)}`;
-  const votes = `${fmt(f.ci90_votes[0])}–${fmt(f.ci90_votes[1])}`;
+  if (atBoundary(f)) return esc(T.shifts.boundaryTip(from, to, pct(f.ci90[1], 1)));
+  const ci = span(pct(f.ci90[0], 0), pct(f.ci90[1], 0));
+  const votes = span(fmt(f.ci90_votes[0]), fmt(f.ci90_votes[1]));
   return esc(T.trends.flowTip(from, to, pct(f.share_of_source, 0), ci, fmt(f.value))) +
-    `<br>${esc(T.shifts.votesRange(votes))}` + (notDistinct(f) ? `<br><i>${esc(T.shifts.weakTip)}</i>` : '');
+    `<br>${esc(T.shifts.votesRange(votes))}` + (notDistinct(f) ? `<br><i>${esc(T.shifts.weakTip)}</i>` : '') +
+    (f.lsq_share_of_source !== undefined ? `<br><span class="tip-muted">${esc(T.shifts.lsqTip(pct(f.lsq_share_of_source, 0)))}</span>` : '') +
+    (modelsDisagree(f) ? `<br><i>${esc(T.shifts.disagreeTip)}</i>` : '');
 }
 
 /** Horizontal dot-and-whisker chart. items: {label, value, lo, hi, color, note} */
@@ -441,7 +449,7 @@ function renderShifts() {
       const value = Math.abs(n.net);
       const label = `${flowNodeInfo(Y0, a).short} ${ARROW} ${flowNodeInfo(Y1, b).short}`;
       return { label, value, lo, hi, color: flowNodeInfo(Y1, b).color,
-               tip: esc(T.shifts.netTip(flowNodeInfo(Y0, a).label, flowNodeInfo(Y1, b).label, fmt(value), `${fmt(lo)}–${fmt(hi)}`)) };
+               tip: esc(T.shifts.netTip(flowNodeInfo(Y0, a).label, flowNodeInfo(Y1, b).label, fmt(value), span(fmt(lo), fmt(hi)))) };
     }).sort((x, y) => y.value - x.value);
     forest($('shift-net'), nets);
     const unidentified = model.net.filter(n => n.net === 0 && n.ci90[0] === n.ci90[1]).map(n =>

@@ -80,7 +80,34 @@ flows changed by at most four points against the locality-only model.
 The current bloc categories are presentation groupings, not a prediction about
 a future coalition. They are not a ready-made cross-election party crosswalk.
 
-## Estimated vote flows (2022 → 2026)
+## Published vote-flow model: stratified Bayesian (2022 → 2026)
+
+The dashboard's flows, matrix, error bars and net exchange come from a Bayesian model fitted
+offline by `scripts/ei/bayes_flows.py` (NumPyro), on the units described below.
+
+- **Strata** (on 2022 composition): Arab-majority (Hadash–Ta'al + Ra'am + Balad ≥ 50% of valid
+  votes), Haredi-majority (UTJ + Shas ≥ 50%), and the remaining units by socioeconomic cluster
+  band (1–4, 5–7, 8–10). A separate subset check showed transition rates, especially from
+  non-voters, differ strongly between such groups; one national matrix averages over that.
+- **Per stratum:** a transition matrix T (Dirichlet(1) prior on each row) and an overdispersion
+  parameter κ (log-normal(4, 1) prior, 95% between about 7 and 400; fitted values are 30–350). Each unit's 2026 counts are Dirichlet-multinomial around
+  κ·(x_u T), with x_u the unit's 2022 shares. When areas deviate from uniform behaviour more
+  than sampling noise allows, κ is small and the posterior for T widens: the intervals now
+  include departures from the assumption within each stratum.
+- **Combination:** for every posterior draw, national flows are Σ_s diag(N_2022,s)·T_s,
+  raked to the official national totals. Point estimates are posterior means; intervals are
+  90% equal-tailed. Net exchange is computed within each draw.
+- **Sampling:** NUTS in float64, 4 chains × 1,000 draws after 1,000 warm-up, dense mass matrix,
+  target acceptance 0.95, tree depth ≤ 8, chains started at the stratum's least-squares solution
+  (κ = 60). 2022 groups under 0.2% of a stratum's
+  electorate are left out of that stratum's fit. A stratum is refitted (new seed, doubled warm-up) unless R-hat ≤ 1.01, ESS ≥ 400 and there are
+  no divergences; the script fails rather than write an unconverged fit. Diagnostics are recorded per stratum in `flows_bayes_<level>.json` and `flows.json`.
+
+Still not covered: departures shared by a whole stratum (aggregation bias within a group),
+voter-register churn, and the polling place standing in for residence. The least-squares
+estimate below remains in `flows.json` under `lsq`, and is shown in tooltips for comparison.
+
+## Least-squares vote flows (comparison)
 
 `scripts/flows.py` estimates how 2022 voters voted in 2026 by ecological inference.
 

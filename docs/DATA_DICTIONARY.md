@@ -60,6 +60,13 @@ between 0 and 1, not percentage points. Blank cluster means no cluster assignmen
   has `from`, `to`, raked `value` (2022-electorate scale), `share_of_source` and a 90% bootstrap
   interval (`ci90`, as shares of the source; `ci90_votes`, in votes). `nonvote` = did not cast a
   valid vote; `other_lists` = all lists not in parties.json.
+- `flows.json` levels `bloc`/`list` hold the published (stratified Bayesian) estimates, with
+  `lsq_share_of_source` for comparison and per-stratum diagnostics; `lsq` holds the
+  least-squares fits.
+- `flows_units_<level>.csv`: the unit-level inputs to both models (2022 and 2026 counts per
+  category, eligible voters, cluster).
+- `flows_bayes_<level>.json`: posterior draws (400 per stratum) of each stratum's transition
+  matrix, the stratum's 2022 group sizes and its convergence diagnostics.
 - `flows_net.csv` (and `net` in flows.json, bloc level): net votes from bloc A to bloc B (A→B minus
   B→A) with a 90% bootstrap interval.
 - `audit_summary.json`: combined audit summary and LMS row count.

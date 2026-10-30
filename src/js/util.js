@@ -7,6 +7,8 @@ const fmt = n => numberFormat.format(Math.round(n));
 const pct = (n, digits = 1) => (n * 100).toFixed(digits) + '%';
 // The left-to-right mark keeps the sign before the number inside RTL text.
 const pts = (n, digits = 1) => '\u200e' + (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n * 100).toFixed(digits);
+// A numeric range kept left-to-right inside RTL text (LRI ... PDI), so "82%–84%" is not reordered.
+const span = (a, b) => `\u2066${a}–${b}\u2069`;
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const sum = xs => xs.reduce((a, b) => a + b, 0);
 const YEARS = Object.keys(DATA.years).map(Number);
