@@ -1,0 +1,3 @@
+# Raw evidence must not be newline-normalized.
+data/raw/** -text
+vendor/** -text

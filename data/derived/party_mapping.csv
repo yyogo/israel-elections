@@ -1,0 +1,79 @@
+year,ballot_code,name_he,name_en,bloc,elected,name_status
+2022,אמת,העבודה,Labor,opposition,1,mapped_elected_list
+2022,אצ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,ב,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,ג,יהדות התורה,United Torah Judaism,netanyahu,1,mapped_elected_list
+2022,ד,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,ום,חד״ש–תע״ל,Hadash–Ta’al,arab_lists,1,mapped_elected_list
+2022,ז,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,זך,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,זנ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,זץ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,ט,הציונות הדתית–עוצמה יהודית,Religious Zionism–Otzma Yehudit,netanyahu,1,mapped_elected_list
+2022,י,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,יז,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,ינ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,יץ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,יק,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,כן,המחנה הממלכתי,National Unity,opposition,1,mapped_elected_list
+2022,ך,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,ל,ישראל ביתנו,Yisrael Beiteinu,opposition,1,mapped_elected_list
+2022,מחל,הליכוד,Likud,netanyahu,1,mapped_elected_list
+2022,מרצ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,נז,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,ני,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,נף,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,נץ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,נק,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,נר,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,עם,רע״ם,Ra’am,arab_lists,1,mapped_elected_list
+2022,פה,יש עתיד,Yesh Atid,opposition,1,mapped_elected_list
+2022,ף,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,צ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,ץ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,ק,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,קי,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,קך,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,קנ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,קץ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,רז,,,other_lists,0,not_mapped_retained_as_ballot_code
+2022,שס,ש״ס,Shas,netanyahu,1,mapped_elected_list
+2022,ת,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,אמת,הדמוקרטים,The Democrats,opposition,1,mapped_elected_list
+2026,ב,עוצמה יהודית,Otzma Yehudit,netanyahu,1,mapped_elected_list
+2026,בד,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,בי,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,בקר,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,ג,יהדות התורה,United Torah Judaism,netanyahu,1,mapped_elected_list
+2026,ד,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,די,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,דרך,ישר!,Yashar,opposition,1,mapped_elected_list
+2026,ה,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,ודם,הרשימה המשותפת,Joint List,arab_lists,1,mapped_elected_list
+2026,ז,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,זך,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,זץ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,ט,הציונות הדתית–זהות,Religious Zionism–Zehut,netanyahu,1,mapped_elected_list
+2026,י,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,יק,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,ך,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,כן,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,ל,ישראל ביתנו,Yisrael Beiteinu,opposition,1,mapped_elected_list
+2026,מחל,הליכוד,Likud,netanyahu,1,mapped_elected_list
+2026,ני,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,נף,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,נץ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,נקי,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,נר,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,עם,רע״ם,Ra’am,arab_lists,1,mapped_elected_list
+2026,פה,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,צבי,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,צדק,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,צף,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,ק,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,קה,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,קך,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,קץ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,רץ,,,other_lists,0,not_mapped_retained_as_ballot_code
+2026,רק,ביחד,Together,opposition,1,mapped_elected_list
+2026,שס,ש״ס,Shas,netanyahu,1,mapped_elected_list

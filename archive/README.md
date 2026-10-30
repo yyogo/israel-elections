@@ -1,0 +1,1 @@
+The reference-chart.png is the user-provided visual design example. Its figures and labels are not treated as source evidence. Reports under reports/ are earlier products; their CSVs are retained as independent controls for the rebuilt pipeline. The current editable dashboard source is in src/, and its final build is in dist/.

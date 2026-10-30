@@ -1,0 +1,38 @@
+{
+  "year": 2022,
+  "ballot_rows": 12545,
+  "settlement_rows_including_external": 1216,
+  "party_columns": 40,
+  "valid_votes": 4764742,
+  "ballot_party_totals_reconcile": true,
+  "voters_equal_valid_plus_invalid": true,
+  "matches_supplied_settlement_export_for_all_parties_and_valid_votes": true,
+  "settlement_export_control_differences": {
+    "בזב": 0,
+    "מצביעים": 0,
+    "פסולים": 0,
+    "כשרים": 0
+  },
+  "unassigned_settlements": 35,
+  "unassigned_votes": 20466,
+  "external_envelope_votes": 458714,
+  "cluster_10_valid": 4004,
+  "cluster_10_settlements": [
+    {
+      "code": 267,
+      "name_he": "כפר שמריהו",
+      "valid": 1243
+    },
+    {
+      "code": 587,
+      "name_he": "סביון",
+      "valid": 2681
+    },
+    {
+      "code": 1324,
+      "name_he": "ארסוף",
+      "valid": 80
+    }
+  ],
+  "matches_previous_cluster_controls": true
+}

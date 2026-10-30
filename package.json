@@ -1,0 +1,8 @@
+{
+  "name": "israel-election-source-takeout",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Optional browser verification only; Python handles all builds and analysis.",
+  "scripts": {"test": "node tests/browser-smoke.cjs"},
+  "devDependencies": {"playwright": "1.62.1"}
+}

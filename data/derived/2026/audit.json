@@ -1,0 +1,31 @@
+{
+  "year": 2026,
+  "ballot_rows": 12926,
+  "settlement_rows_including_external": 1225,
+  "party_columns": 38,
+  "valid_votes": 5690682,
+  "ballot_party_totals_reconcile": true,
+  "voters_equal_valid_plus_invalid": true,
+  "unassigned_settlements": 41,
+  "unassigned_votes": 43003,
+  "external_envelope_votes": 449357,
+  "cluster_10_valid": 4551,
+  "cluster_10_settlements": [
+    {
+      "code": 267,
+      "name_he": "כפר שמריהו",
+      "valid": 1405
+    },
+    {
+      "code": 587,
+      "name_he": "סביון",
+      "valid": 3018
+    },
+    {
+      "code": 1324,
+      "name_he": "ארסוף",
+      "valid": 128
+    }
+  ],
+  "matches_previous_cluster_controls": true
+}
