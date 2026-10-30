@@ -245,6 +245,7 @@ function renderScatter() {
 
 function renderTrends() {
   renderSankey();
+  renderShiftPanel();
   renderByCluster();
   renderScatter();
 }
@@ -258,4 +259,205 @@ function initTrends() {
   segmented($('trend-metric'), METRICS.map(m => ({ value: m.id, label: m.label() })), trendState.metric,
     v => { trendState.metric = v; renderByCluster(); renderScatter(); });
   new ResizeObserver(() => renderSankey()).observe($('sankey').parentElement);
+  initShifts();
+}
+
+// --- Vote shifts: transition matrix and shift chart with 90% intervals -------------
+
+const shiftState = { level: 'bloc', filter: 'cross' };
+
+function nodeBloc(year, id) {
+  if (id === 'nonvote') return 'nonvote';
+  if (id === 'other_lists') return 'other';
+  if (blocIndex[id] !== undefined) return id;
+  return YEAR[year].parties.find(p => p.code === id)?.bloc ?? 'other';
+}
+
+// A flow pinned at zero in every bootstrap replicate sits on the model's boundary: the data
+// cannot separate it from turnout changes, so it is shown as "not identified", not as 0 ± 0.
+const atBoundary = f => f.ci90[1] < 0.003;
+const notDistinct = f => !atBoundary(f) && f.ci90[0] < 0.003;
+
+function shiftLabel(f) {
+  return `${flowNodeInfo(Y0, f.from).short} → ${flowNodeInfo(Y1, f.to).short}`;
+}
+
+function renderMatrix() {
+  const model = DATA.flows[shiftState.level];
+  const rows = model.sources, cols = model.targets;
+  const svg = $('shift-matrix');
+  const W = svg.parentElement.clientWidth;
+  if (!W) return;
+  const mobile = W < 620;
+  const rowLabelW = mobile ? 86 : 150, headH = mobile ? 92 : 110;
+  const endPad = mobile ? 30 : 56; // room for the last rotated header
+  const cell = Math.max(mobile ? 22 : 30, Math.min(64, (W - rowLabelW - endPad) / cols.length));
+  const H = headH + rows.length * cell + 6;
+  const gridW = cols.length * cell;
+  const x0 = RTL ? W - rowLabelW - gridW : rowLabelW;
+  const colX = k => (RTL ? x0 + gridW - (k + 1) * cell : x0 + k * cell);
+  const rowY = a => headH + a * cell;
+  const byPair = Object.fromEntries(model.flows.map((f, i) => [`${f.from}|${f.to}`, i]));
+  const big = cell >= 46;
+  let out = '';
+  // Column headers, rotated so long names fit.
+  cols.forEach((c, k) => {
+    const cx = colX(k) + cell / 2;
+    // Rotated labels use LTR layout so "start" is the end nearest the cell in both languages.
+    out += `<text class="matrix-col" transform="translate(${cx + 4},${headH - 6}) rotate(-55)" text-anchor="start" ` +
+      `direction="ltr">${esc(flowNodeInfo(Y1, c.id).short)}</text>`;
+  });
+  rows.forEach((r, a) => {
+    const y = rowY(a);
+    out += `<text class="matrix-row" x="${RTL ? W - 4 : 4}" y="${y + cell / 2 + 4}" text-anchor="${anchor(RTL ? 'left' : 'right')}">${esc(flowNodeInfo(Y0, r.id).short)}</text>`;
+    cols.forEach((c, k) => {
+      const i = byPair[`${r.id}|${c.id}`];
+      const f = model.flows[i];
+      const v = f.share_of_source;
+      const x = colX(k);
+      const same = nodeBloc(Y0, r.id) === nodeBloc(Y1, c.id);
+      const fill = atBoundary(f) ? '#ffffff' : shade(v);
+      const ink = v > 0.45 ? '#fff' : '#17384a';
+      out += `<g class="matrix-cell${notDistinct(f) ? ' weak' : ''}${atBoundary(f) ? ' boundary' : ''}" data-flow="${i}">` +
+        `<rect x="${x + 1}" y="${y + 1}" width="${cell - 2}" height="${cell - 2}" rx="3" fill="${fill}" class="${same ? 'same-bloc' : ''}"/>`;
+      if (atBoundary(f)) {
+        out += `<text x="${x + cell / 2}" y="${y + cell / 2 + 4}" text-anchor="middle" class="cell-zero">·</text>`;
+      } else if (v >= 0.005) {
+        out += `<text x="${x + cell / 2}" y="${y + cell / 2 + (big ? 0 : 4)}" text-anchor="middle" fill="${ink}" class="cell-value">${Math.round(v * 100)}</text>`;
+        if (big) out += `<text x="${x + cell / 2}" y="${y + cell / 2 + 13}" text-anchor="middle" fill="${ink}" class="cell-ci" direction="ltr">${Math.round(f.ci90[0] * 100)}–${Math.round(f.ci90[1] * 100)}</text>`;
+      }
+      out += '</g>';
+    });
+  });
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.style.height = H + 'px';
+  svg.innerHTML = out;
+  svg.querySelectorAll('.matrix-cell').forEach(g => {
+    const f = model.flows[+g.dataset.flow];
+    g.addEventListener('pointermove', e => tooltip.show(flowTooltip(f), e));
+    g.addEventListener('pointerleave', () => tooltip.hide());
+  });
+}
+
+function shade(v) {
+  // Single-hue sequential ramp (light -> dark teal-blue) on a square-root scale,
+  // so small but real flows remain visible.
+  const t = Math.sqrt(Math.min(1, v));
+  const a = [234, 241, 245], b = [22, 62, 86];
+  return `rgb(${a.map((x, i) => Math.round(x + (b[i] - x) * t)).join(',')})`;
+}
+
+function flowTooltip(f) {
+  const from = flowNodeInfo(Y0, f.from).label, to = flowNodeInfo(Y1, f.to).label;
+  if (atBoundary(f)) return esc(T.shifts.boundaryTip(from, to));
+  const ci = `${pct(f.ci90[0], 0)}–${pct(f.ci90[1], 0)}`;
+  const votes = `${fmt(f.ci90_votes[0])}–${fmt(f.ci90_votes[1])}`;
+  return esc(T.trends.flowTip(from, to, pct(f.share_of_source, 0), ci, fmt(f.value))) +
+    `<br>${esc(T.shifts.votesRange(votes))}` + (notDistinct(f) ? `<br><i>${esc(T.shifts.weakTip)}</i>` : '');
+}
+
+/** Horizontal dot-and-whisker chart. items: {label, value, lo, hi, color, note} */
+function forest(svg, items, { signed = false, unit = v => fmt(v) } = {}) {
+  const W = svg.parentElement.clientWidth;
+  if (!W) return;
+  const mobile = W < 620;
+  const labelW = mobile ? 158 : 230, valueW = mobile ? 0 : 92, rowH = 26, top = 22;
+  const H = top + items.length * rowH + 8;
+  const max = Math.max(1, ...items.map(d => Math.max(Math.abs(d.hi), Math.abs(d.lo), Math.abs(d.value))));
+  const lo = signed ? -max : 0;
+  const plot0 = RTL ? valueW + 8 : labelW, plot1 = RTL ? W - labelW : W - valueW - 8;
+  const sx = v => {
+    const t = (v - lo) / (max - lo);
+    return RTL ? plot1 - t * (plot1 - plot0) : plot0 + t * (plot1 - plot0);
+  };
+  let out = '';
+  // Gridlines with round tick values.
+  const step = niceStep(max / (mobile ? 2 : 4));
+  for (let v = signed ? -Math.floor(max / step) * step : 0; v <= max + 1e-9; v += step) {
+    out += `<line class="forest-grid${v === 0 ? ' zero' : ''}" x1="${sx(v)}" x2="${sx(v)}" y1="${top - 6}" y2="${H - 6}"/>` +
+      `<text class="axis" x="${sx(v)}" y="${top - 10}" text-anchor="middle" direction="ltr">${esc(compact(v))}</text>`;
+  }
+  items.forEach((d, i) => {
+    const y = top + i * rowH + rowH / 2;
+    out += `<g class="forest-row" data-i="${i}"><rect class="forest-hit" x="0" y="${y - rowH / 2}" width="${W}" height="${rowH}"/>` +
+      `<text class="forest-label" x="${RTL ? W - 4 : 4}" y="${y + 4}" text-anchor="${anchor(RTL ? 'left' : 'right')}">${esc(d.label)}</text>` +
+      `<line class="forest-whisker" x1="${sx(d.lo)}" x2="${sx(d.hi)}" y1="${y}" y2="${y}" stroke="${d.color}"/>` +
+      `<line class="forest-cap" x1="${sx(d.lo)}" x2="${sx(d.lo)}" y1="${y - 5}" y2="${y + 5}" stroke="${d.color}"/>` +
+      `<line class="forest-cap" x1="${sx(d.hi)}" x2="${sx(d.hi)}" y1="${y - 5}" y2="${y + 5}" stroke="${d.color}"/>` +
+      `<circle cx="${sx(d.value)}" cy="${y}" r="5.5" fill="${d.hollow ? '#fff' : d.color}" stroke="${d.color}" stroke-width="2"/>` +
+      (valueW ? `<text class="forest-value" x="${RTL ? 4 : W - 4}" y="${y + 4}" text-anchor="${RTL ? 'start' : 'end'}" direction="ltr">${esc(unit(d.value))}</text>` : '') +
+      '</g>';
+  });
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.style.height = H + 'px';
+  svg.innerHTML = out;
+  svg.querySelectorAll('.forest-row').forEach(g => {
+    const d = items[+g.dataset.i];
+    g.addEventListener('pointermove', e => tooltip.show(d.tip, e));
+    g.addEventListener('pointerleave', () => tooltip.hide());
+  });
+}
+
+function niceStep(x) {
+  const p = 10 ** Math.floor(Math.log10(x)), m = x / p;
+  return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
+}
+const compact = v => (Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : Math.abs(v) >= 1e3 ? Math.round(v / 1e3) + 'K' : String(Math.round(v)))
+  .replace(/^-/, '−');
+
+function shiftKind(f) {
+  if (f.from === 'nonvote' || f.to === 'nonvote') return 'turnout';
+  return nodeBloc(Y0, f.from) === nodeBloc(Y1, f.to) ? 'within' : 'cross';
+}
+
+function renderShifts() {
+  const model = DATA.flows[shiftState.level];
+  const sameList = f => shiftState.level === 'bloc' ? f.from === f.to
+    : flowNodeInfo(Y0, f.from).label === flowNodeInfo(Y1, f.to).label;
+  const kinds = shiftState.filter;
+  const items = model.flows
+    .filter(f => !sameList(f) && !(f.from === 'nonvote' && f.to === 'nonvote'))
+    .filter(f => kinds === 'all' || shiftKind(f) === kinds)
+    .filter(f => !atBoundary(f))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 14)
+    .map(f => ({
+      label: shiftLabel(f), value: f.value, lo: f.ci90_votes[0], hi: f.ci90_votes[1],
+      color: flowNodeInfo(Y0, f.from).color, hollow: notDistinct(f), tip: flowTooltip(f),
+    }));
+  $('shift-empty').hidden = items.length > 0;
+  forest($('shift-gross'), items);
+
+  const netBox = $('shift-net-box');
+  netBox.hidden = shiftState.level !== 'bloc';
+  $('shift-unidentified').textContent = '';
+  if (shiftState.level === 'bloc') {
+    const nets = model.net.filter(n => n.net !== 0 || n.ci90[0] !== n.ci90[1]).map(n => {
+      // Orient each pair so the arrow points the way votes net-moved.
+      const flip = n.net < 0;
+      const [a, b] = flip ? [n.b, n.a] : [n.a, n.b];
+      const [lo, hi] = flip ? [-n.ci90[1], -n.ci90[0]] : n.ci90;
+      const value = Math.abs(n.net);
+      const label = `${flowNodeInfo(Y0, a).short} → ${flowNodeInfo(Y1, b).short}`;
+      return { label, value, lo, hi, color: flowNodeInfo(Y1, b).color,
+               tip: esc(T.shifts.netTip(flowNodeInfo(Y0, a).label, flowNodeInfo(Y1, b).label, fmt(value), `${fmt(lo)}–${fmt(hi)}`)) };
+    }).sort((x, y) => y.value - x.value);
+    forest($('shift-net'), nets);
+    const unidentified = model.net.filter(n => n.net === 0 && n.ci90[0] === n.ci90[1]).map(n =>
+      `${flowNodeInfo(Y0, n.a).short} ↔ ${flowNodeInfo(Y0, n.b).short}`);
+    $('shift-unidentified').textContent = unidentified.length ? T.shifts.unidentified(unidentified.join(' · ')) : '';
+  }
+}
+
+function renderShiftPanel() {
+  renderMatrix();
+  renderShifts();
+}
+
+function initShifts() {
+  segmented($('shift-level'), [{ value: 'bloc', label: T.trends.levelBloc }, { value: 'list', label: T.trends.levelList }],
+    shiftState.level, v => { shiftState.level = v; renderShiftPanel(); });
+  segmented($('shift-filter'), ['cross', 'within', 'turnout', 'all'].map(v => ({ value: v, label: T.shifts.filters[v] })),
+    shiftState.filter, v => { shiftState.filter = v; renderShifts(); });
+  new ResizeObserver(() => renderShiftPanel()).observe($('shift-matrix').parentElement);
 }

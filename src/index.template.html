@@ -101,6 +101,41 @@
 
   <div class="panel">
     <div class="panel-head">
+      <div>
+        <h3 data-i18n="shifts.title"></h3>
+        <p class="muted" data-i18n="shifts.lead"></p>
+      </div>
+      <div class="segmented" id="shift-level" role="group"></div>
+    </div>
+    <div class="shift-grid">
+      <div>
+        <h4 data-i18n="shifts.matrixTitle"></h4>
+        <p class="muted small" data-i18n="shifts.matrixLead"></p>
+        <div class="chart-area flush"><svg id="shift-matrix" role="img"></svg></div>
+      </div>
+      <div>
+        <div class="panel-head tight">
+          <div>
+            <h4 data-i18n="shifts.grossTitle"></h4>
+            <p class="muted small" data-i18n="shifts.grossLead"></p>
+          </div>
+        </div>
+        <div class="segmented wrap-ok" id="shift-filter" role="group"></div>
+        <p class="note" id="shift-empty" data-i18n="shifts.empty" hidden></p>
+        <div class="chart-area flush"><svg id="shift-gross" role="img"></svg></div>
+        <div id="shift-net-box">
+          <h4 data-i18n="shifts.netTitle"></h4>
+          <p class="muted small" data-i18n="shifts.netLead"></p>
+          <div class="chart-area flush"><svg id="shift-net" role="img"></svg></div>
+        </div>
+      </div>
+    </div>
+    <p class="caveat" id="shift-unidentified"></p>
+    <p class="note" data-i18n="shifts.caveat"></p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
       <h3><span data-i18n="trends.metric"></span></h3>
       <div class="segmented wrap-ok" id="trend-metric" role="group"></div>
     </div>

@@ -58,7 +58,10 @@ between 0 and 1, not percentage points. Blank cluster means no cluster assignmen
   per-locality rows `[eligible, voters, valid, ...votes]` for both years, and the flow model.
 - `flows.json` / `flows.csv`: estimated 2022→2026 flows at `bloc` and `list` level. Each flow
   has `from`, `to`, raked `value` (2022-electorate scale), `share_of_source` and a 90% bootstrap
-  interval. `nonvote` = did not cast a valid vote; `other_lists` = all lists not in parties.json.
+  interval (`ci90`, as shares of the source; `ci90_votes`, in votes). `nonvote` = did not cast a
+  valid vote; `other_lists` = all lists not in parties.json.
+- `flows_net.csv` (and `net` in flows.json, bloc level): net votes from bloc A to bloc B (A→B minus
+  B→A) with a 90% bootstrap interval.
 - `audit_summary.json`: combined audit summary and LMS row count.
 
 ## Raw file inventory

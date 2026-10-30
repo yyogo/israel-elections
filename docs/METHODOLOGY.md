@@ -93,6 +93,16 @@ a future coalition. They are not a ready-made cross-election party crosswalk.
    of both years (including external envelopes); the 2026 margin is scaled to the 2022 electorate.
 5. Bootstrap localities (60 replicates, fixed seed) for 90% intervals on each row share.
 
+6. Net exchange between blocs (A→B minus B→A) is computed within each bootstrap replicate,
+   so its interval accounts for the correlation between the two directions.
+
+Boundary estimates: the non-negativity constraint binds for several cross-bloc cells (for
+example Netanyahu bloc → change bloc). Such cells are 0 in every replicate, and their 90% range
+collapses to a point. That is not evidence of no switching: with aggregate data, a direct
+switch A→B is nearly indistinguishable from A voters abstaining while former non-voters choose
+B. The dashboard marks these cells as not identified instead of showing 0 ± 0, and treats
+intervals that collapse at 0% or 100% as optimistic.
+
 Assumptions and limits: voters of a list behave alike across localities (no contextual
 effects); register churn (new voters, deaths, moves) is folded into each locality's
 electorate; locality turnout excludes external envelopes. Estimates are robust for blocs and

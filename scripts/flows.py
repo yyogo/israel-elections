@@ -227,8 +227,18 @@ def estimate(level, parties):
     F = rake(T, nat22, nat26)
     fit_r2 = r_squared(xs, ys, ws, T)
 
+    # Net exchange is only defined where the same category exists in both years (blocs).
+    pairs = []
+    if level == 'bloc':
+        pos = {c: k for k, c in enumerate(cols26)}
+        pairs = [(a, b) for a in range(len(rows22)) for b in range(a + 1, len(rows22))
+                 if rows22[a] in pos and rows22[b] in pos]
+    net = lambda M, a, b: M[a][pos[rows22[b]]] - M[b][pos[rows22[a]]]
+
     rng = random.Random(SEED)
     samples = defaultdict(list)
+    vote_samples = defaultdict(list)
+    net_samples = defaultdict(list)
     for _ in range(BOOTSTRAP):
         idx = [rng.randrange(len(keys)) for _ in keys]
         Tb = fit([xs[i] for i in idx], [ys[i] for i in idx], [ws[i] for i in idx], start=T, iterations=1500, tol=1e-7)
@@ -236,6 +246,9 @@ def estimate(level, parties):
         for a in range(len(rows22)):
             for k in range(len(cols26)):
                 samples[a, k].append(Fb[a][k] / nat22[a] if nat22[a] else 0)
+                vote_samples[a, k].append(Fb[a][k])
+        for a, b in pairs:
+            net_samples[a, b].append(net(Fb, a, b))
 
     flows = []
     for a, source in enumerate(rows22):
@@ -243,12 +256,16 @@ def estimate(level, parties):
             s = samples[a, k]
             flows.append({'from': source, 'to': target, 'value': round(F[a][k]),
                           'share_of_source': F[a][k] / nat22[a] if nat22[a] else 0,
-                          'ci90': [percentile(s, 0.05), percentile(s, 0.95)]})
+                          'ci90': [percentile(s, 0.05), percentile(s, 0.95)],
+                          'ci90_votes': [round(percentile(vote_samples[a, k], q)) for q in (0.05, 0.95)]})
+    nets = [{'a': rows22[a], 'b': rows22[b], 'net': round(net(F, a, b)),
+             'ci90': [round(percentile(net_samples[a, b], q)) for q in (0.05, 0.95)]} for a, b in pairs]
     return {
         'level': level,
         'sources': [{'id': c, 'total': n} for c, n in zip(rows22, nat22)],
         'targets': [{'id': c, 'total': n} for c, n in zip(cols26, nat26)],
         'flows': flows,
+        'net': nets,
         'diagnostics': {'units': len(keys), 'split_localities': len(split), 'weighted_r2': fit_r2, 'bootstrap_replicates': BOOTSTRAP,
                         'raw_transition': [[round(v, 4) for v in row] for row in T]},
     }
@@ -260,11 +277,17 @@ def main():
     (OUT / 'flows.json').write_text(json.dumps(result, ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
     with (OUT / 'flows.csv').open('w', encoding='utf-8', newline='') as f:
         w = csv.writer(f)
-        w.writerow(['level', 'from_2022', 'to_2026', 'estimated_votes', 'share_of_source', 'ci90_low', 'ci90_high'])
+        w.writerow(['level', 'from_2022', 'to_2026', 'estimated_votes', 'votes_ci90_low', 'votes_ci90_high',
+                    'share_of_source', 'ci90_low', 'ci90_high'])
         for level, r in result.items():
             for x in r['flows']:
-                w.writerow([level, x['from'], x['to'], x['value'], f"{x['share_of_source']:.4f}",
+                w.writerow([level, x['from'], x['to'], x['value'], *x['ci90_votes'], f"{x['share_of_source']:.4f}",
                             f"{x['ci90'][0]:.4f}", f"{x['ci90'][1]:.4f}"])
+    with (OUT / 'flows_net.csv').open('w', encoding='utf-8', newline='') as f:
+        w = csv.writer(f)
+        w.writerow(['bloc_a', 'bloc_b', 'net_votes_a_to_b', 'ci90_low', 'ci90_high'])
+        for x in result['bloc']['net']:
+            w.writerow([x['a'], x['b'], x['net'], *x['ci90']])
     for level, r in result.items():
         print(level, json.dumps({k: v for k, v in r['diagnostics'].items() if k != 'raw_transition'}))
 

@@ -1,0 +1,11 @@
+bloc_a,bloc_b,net_votes_a_to_b,ci90_low,ci90_high
+netanyahu,change,0,0,0
+netanyahu,arab,0,0,0
+netanyahu,other,0,0,0
+netanyahu,nonvote,85872,85872,85872
+change,arab,0,0,0
+change,other,-10508,-18880,-3299
+change,nonvote,-158603,-165811,-150231
+arab,other,0,0,0
+arab,nonvote,-263964,-263964,-263964
+other,nonvote,-167661,-176033,-160453

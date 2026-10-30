@@ -56,6 +56,13 @@ const url = pathToFileURL(path.resolve(__dirname, '../dist/index.html')).href;
     assert.ok(await page.locator('#sankey .flow').count() > 20);
     assert.equal(await page.locator('#sankey-caveat').isVisible(), true);
     assert.equal(await page.locator('#scatter canvas').count() > 0, true);
+    // Shift panel: bloc matrix is 5x5; net exchange shows at bloc level only.
+    assert.equal(await page.locator('#shift-matrix .matrix-cell').count(), 25);
+    assert.ok(await page.locator('#shift-net .forest-row').count() >= 3);
+    await page.locator('#shift-level [data-value="list"]').click();
+    assert.equal(await page.locator('#shift-net-box').isVisible(), false);
+    await page.locator('#shift-filter [data-value="all"]').click();
+    assert.ok(await page.locator('#shift-gross .forest-row').count() >= 10);
     await page.close();
 
     // Localities, phone width.

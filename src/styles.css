@@ -176,6 +176,29 @@ select { border: 1px solid var(--line); background: white; border-radius: 6px; p
 .scatter-legend .swatch { width: 10px; height: 10px; border-radius: 50%; }
 .tooltip { position: fixed; background: #142e3e; color: #fff; pointer-events: none; z-index: 50; border-radius: 6px; padding: 8px 11px; box-shadow: 0 4px 16px #0003; font-size: 12px; line-height: 1.5; max-width: 300px; }
 
+/* ---------- shifts ---------- */
+.shift-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; margin-bottom: 10px; }
+.chart-area.flush { padding: 6px 0 0; }
+.panel-head.tight { margin-bottom: 6px; }
+.matrix-col, .matrix-row { font: 600 11px var(--font); fill: var(--ink); }
+.matrix-cell rect { stroke: #fff; }
+.matrix-cell rect.same-bloc { stroke: #17384a; stroke-width: 1.5; }
+.matrix-cell:hover rect { stroke: #e0a000; stroke-width: 2.5; }
+.matrix-cell.weak .cell-value { font-style: italic; opacity: .7; }
+.cell-value { font: 700 12px var(--font); }
+.cell-ci { font: 9px var(--font); opacity: .8; }
+.cell-zero { fill: #9aa8b1; font: 700 16px var(--font); }
+.forest-grid { stroke: #e3e9ed; }
+.forest-grid.zero { stroke: #8b9aa4; }
+.forest-hit { fill: transparent; }
+.forest-row:hover .forest-hit { fill: #f2f6f8; }
+.forest-label { font: 12px var(--font); fill: var(--ink); }
+.forest-value { font: 600 12px var(--font); fill: var(--ink); font-variant-numeric: tabular-nums; }
+.forest-whisker { stroke-width: 2.5; stroke-linecap: round; }
+.forest-cap { stroke-width: 2; }
+#shift-net-box { margin-top: 14px; }
+#shift-unidentified:empty { display: none; }
+
 /* ---------- localities ---------- */
 .settlement-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 14px; align-items: start; }
 .search { position: relative; margin-bottom: 14px; }
@@ -217,7 +240,7 @@ select { border: 1px solid var(--line); background: white; border-radius: 6px; p
   .chart-layout { grid-template-columns: minmax(0, 1fr) 250px; }
   .legend { grid-template-columns: 1fr 1fr; }
   .bloc-group:nth-child(3) { border-inline-start: 0; padding-inline-start: 0; }
-  .two-col, .settlement-layout { grid-template-columns: 1fr; }
+  .two-col, .settlement-layout, .shift-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
   .wrap { padding-inline: 10px; }
@@ -241,6 +264,7 @@ select { border: 1px solid var(--line); background: white; border-radius: 6px; p
   .tab > .panel:not(:has(.chart-layout)), .settlement-layout > .panel { padding: 12px; }
   .ranking { grid-template-columns: 1fr; padding: 8px 10px; }
   .kpis { grid-template-columns: 1fr 1fr; }
+  .forest-label { font-size: 11px; }
   .year-cards, .swings { grid-template-columns: 1fr; }
   .prose { padding: 12px 14px; }
 }
