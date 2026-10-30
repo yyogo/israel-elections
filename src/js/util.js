@@ -97,9 +97,13 @@ const tooltip = (() => {
  * In an RTL document "start" is the right edge, so the keywords flip.
  */
 const RTL = LANG === 'he';
+// Arrows are not mirrored by the bidi algorithm, so pick the one that points in reading order.
+const ARROW = RTL ? '←' : '→';
 function anchor(grow) {
   if (grow === 'middle') return 'middle';
   return (grow === 'right') !== RTL ? 'start' : 'end';
 }
 
+// ECharts containers are LTR (see styles.css); give their HTML tooltips the page direction.
+const TOOLTIP_DIR = `direction:${RTL ? 'rtl' : 'ltr'};text-align:start;`;
 const ECHARTS_TEXT = { fontFamily: 'system-ui, -apple-system, "Segoe UI", Arial, sans-serif', color: '#17384a' };

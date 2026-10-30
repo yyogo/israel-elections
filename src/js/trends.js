@@ -161,7 +161,7 @@ function renderByCluster() {
     grid: { left: 48, right: 48, top: 36, bottom: 30 },
     legend: { top: 0, data: [String(Y0), String(Y1)], textStyle: ECHARTS_TEXT, align: RTL ? 'right' : 'left' },
     tooltip: {
-      trigger: 'axis', axisPointer: { type: 'shadow' },
+      trigger: 'axis', axisPointer: { type: 'shadow' }, extraCssText: TOOLTIP_DIR,
       formatter: ps => {
         const i = ps[0].dataIndex, d = b[i] - a[i];
         return `<b>${esc(groupName(ids[i]))}</b><br>${esc(m.label())}<br>${Y0}: ${pct(a[i])}<br>${Y1}: ${pct(b[i])}<br>${T.trends.change}: ${pts(d)} ${T.clusters.pts}`;
@@ -217,14 +217,15 @@ function renderScatter() {
     textStyle: ECHARTS_TEXT,
     grid: { left: 64, right: 20, top: 14, bottom: 50 },
     tooltip: {
+      extraCssText: TOOLTIP_DIR,
       formatter: p => p.data.code
         ? `<b>${esc(p.data.name)}</b><br>${p.data.cluster ? T.cluster(p.data.cluster) : T.settlements.noCluster}<br>` +
-          `${esc(m.label())}: ${pct(p.value[0])} → <b>${pct(p.value[3])}</b> (${pts(p.value[1])} ${T.clusters.pts})<br>${fmt(p.value[2])} ${T.validVotes}`
+          `${esc(m.label())}: ${pct(p.value[0])} ${ARROW} <b>${pct(p.value[3])}</b> (${pts(p.value[1])} ${T.clusters.pts})<br>${fmt(p.value[2])} ${T.validVotes}`
         : '',
     },
     xAxis: { type: 'value', min: xlo, max: xhi, name: `${m.label()} · ${Y0}`, nameLocation: 'middle', nameGap: 30,
              nameTextStyle: { fontWeight: 600, color: '#405866' }, ...percentAxis },
-    yAxis: { type: 'value', min: -yabs, max: yabs, name: `${T.trends.change} ${Y0}→${Y1}`, nameLocation: 'middle', nameGap: 46,
+    yAxis: { type: 'value', min: -yabs, max: yabs, name: T.trends.changeSince(Y0, Y1), nameLocation: 'middle', nameGap: 46,
              nameTextStyle: { fontWeight: 600, color: '#405866' },
              axisLabel: { formatter: v => pts(v, 0), color: '#61727d' }, splitLine: { lineStyle: { color: '#eef2f4' } } },
     series: [{
@@ -279,7 +280,7 @@ const atBoundary = f => f.ci90[1] < 0.003;
 const notDistinct = f => !atBoundary(f) && f.ci90[0] < 0.003;
 
 function shiftLabel(f) {
-  return `${flowNodeInfo(Y0, f.from).short} → ${flowNodeInfo(Y1, f.to).short}`;
+  return `${flowNodeInfo(Y0, f.from).short} ${ARROW} ${flowNodeInfo(Y1, f.to).short}`;
 }
 
 function renderMatrix() {
@@ -438,7 +439,7 @@ function renderShifts() {
       const [a, b] = flip ? [n.b, n.a] : [n.a, n.b];
       const [lo, hi] = flip ? [-n.ci90[1], -n.ci90[0]] : n.ci90;
       const value = Math.abs(n.net);
-      const label = `${flowNodeInfo(Y0, a).short} → ${flowNodeInfo(Y1, b).short}`;
+      const label = `${flowNodeInfo(Y0, a).short} ${ARROW} ${flowNodeInfo(Y1, b).short}`;
       return { label, value, lo, hi, color: flowNodeInfo(Y1, b).color,
                tip: esc(T.shifts.netTip(flowNodeInfo(Y0, a).label, flowNodeInfo(Y1, b).label, fmt(value), `${fmt(lo)}–${fmt(hi)}`)) };
     }).sort((x, y) => y.value - x.value);
