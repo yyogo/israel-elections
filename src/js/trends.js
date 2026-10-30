@@ -149,7 +149,7 @@ function renderFlowTable(model, keep) {
 function renderByCluster() {
   const m = METRICS.find(m => m.id === trendState.metric);
   const ids = [...Array.from({ length: 10 }, (_, i) => String(i + 1)), 'national'];
-  const values = year => ids.map(id => metricValue(year, m.id, groupById(year, id)));
+  const values = year => ids.map(id => metricValue(year, m.id, groupById(year, id, 'area')));
   const a = values(Y0), b = values(Y1);
   if (!byClusterChart) {
     byClusterChart = echarts.init($('by-cluster'), null, { renderer: 'svg' });
@@ -251,6 +251,7 @@ function renderTrends() {
 
 function initTrends() {
   renderKpis();
+  $('flows-lead').textContent = T.trends.flowsLead(fmt(DATA.flows.bloc.diagnostics.units));
   segmented($('flow-level'), [{ value: 'bloc', label: T.trends.levelBloc }, { value: 'list', label: T.trends.levelList }],
     trendState.level, v => { trendState.level = v; renderSankey(); });
   $('flow-nonvoters').addEventListener('change', e => { trendState.nonvoters = e.target.checked; renderSankey(); });

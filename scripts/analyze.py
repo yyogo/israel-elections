@@ -174,7 +174,67 @@ def analyze(year, lookup, parties):
     audit['matches_previous_cluster_controls'] = True
     dump(folder / 'audit.json', audit)
     return {'year': year, 'codes': codes, 'groups': grouped, 'controls': controls, 'totals': totals,
-            'settlements': settlements, 'audit': audit}
+            'settlements': settlements, 'ballots': ballots, 'audit': audit}
+
+
+def ballot_key(number):
+    """Ballot numbers as written in the crosswalk: '3', '576.1'."""
+    f = float(number)
+    return str(int(f)) if f.is_integer() else '%g' % f
+
+
+def load_area_clusters():
+    """CBS 2021 clusters per statistical area: {(locality, stat11): cluster}."""
+    from xlsx import read_xlsx
+    rows = read_xlsx(ROOT / 'data/raw/geo/cbs-2021-socioeconomic-statistical-areas.xlsx')['לוח ג table C']
+    clusters = {}
+    for r in rows:
+        if r and len(r) > 10 and all(isinstance(r[i], float) for i in (0, 1, 6, 10)):
+            clusters[int(r[1]), int(r[6])] = int(r[10])
+    assert len(clusters) == 1641
+    return clusters
+
+
+def analyze_areas(result, lookup, area_clusters):
+    """Neighbourhood-level clusters: a ballot box takes its statistical area's cluster when
+    the locality is divided into clustered areas and the box was located; otherwise it keeps
+    the locality cluster. Writes per-year assignment, group and area tables."""
+    year, codes = result['year'], result['codes']
+    path = OUT / 'geo' / f'ballot_areas_{year}.csv'
+    with path.open(encoding='utf-8', newline='') as f:
+        located = {(int(r['settlement_code']), r['ballot_number']): r for r in csv.DictReader(f)}
+    divided = {loc for loc, _ in area_clusters}
+    grouped = {g: [0] * (4 + len(codes)) for g in GROUP_ORDER}
+    areas, assignments = defaultdict(lambda: [0] * (4 + len(codes))), []
+    basis_votes = defaultdict(int)
+    for b in result['ballots']:
+        code = b['settlement_code']
+        cluster, status, group = classify(code, lookup)
+        row = located.get((code, ballot_key(b['ballot_number'])))
+        stat11 = int(row['stat11']) if row and row['stat11'] and int(row['area_locality']) == code else None
+        basis = 'locality'
+        if code in divided:
+            if stat11 is not None and (code, stat11) in area_clusters:
+                cluster, basis = area_clusters[code, stat11], 'statistical_area'
+                group = str(cluster)
+            else:
+                basis = 'locality_fallback'
+        counts = [b[k] for k in CONTROLS_EN + codes]
+        for i, v in enumerate(counts):
+            grouped[group][i] += v
+            areas[code, stat11 if code in divided else None][i] += v
+        basis_votes[basis] += b['valid']
+        assignments.append(dict(year=year, settlement_code=code, ballot_number=b['ballot_number'], stat11=stat11 if stat11 is not None else '',
+                                area_cluster=cluster or '', basis=basis, location_source=row['location_source'] if row else 'not_in_crosswalk'))
+    folder = OUT / str(year)
+    write(folder / 'ballot_area_assignment.csv', assignments)
+    write(folder / 'area_clusters_wide.csv', [dict(year=year, group=g, **dict(zip(CONTROLS_EN + codes, v))) for g, v in grouped.items()])
+    write(folder / 'areas_wide.csv', [dict(year=year, settlement_code=loc, stat11=sa if sa is not None else '',
+                                           area_cluster=area_clusters.get((loc, sa), ''), **dict(zip(CONTROLS_EN + codes, v)))
+                                      for (loc, sa), v in sorted(areas.items(), key=lambda kv: (kv[0][0], kv[0][1] or -1))])
+    assert sum(v[3] for v in grouped.values()) == EXPECTED_VALID[year]
+    result['audit']['area_basis_valid_votes'] = dict(sorted(basis_votes.items()))
+    dump(folder / 'audit.json', result['audit'])
 
 
 def write_party_mapping(results, parties):
@@ -212,6 +272,10 @@ def main():
     results = {y: analyze(y, lookup, parties) for y in YEARS}
     write_party_mapping(results, parties)
     write_presence_comparison(results)
+    if (OUT / 'geo/ballot_areas_2026.csv').exists():
+        area_clusters = load_area_clusters()
+        for r in results.values():
+            analyze_areas(r, lookup, area_clusters)
     dump(OUT / 'audit_summary.json', {'lms_settlement_rows': len(lookup), 'years': {str(y): r['audit'] for y, r in results.items()}})
     print(json.dumps({y: r['audit'] for y, r in results.items()}, ensure_ascii=False, indent=2))
 

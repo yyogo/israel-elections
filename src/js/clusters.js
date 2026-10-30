@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------------------
 const clusterState = {
   year: LATEST,
+  basis: DATA.years[LATEST].areaGroups ? 'area' : 'locality',
   merge: false,
   selectedGroup: '7',
   hoverGroup: null,
@@ -33,8 +34,9 @@ const currentGroup = () =>
 
 function buildGroups() {
   const y = YEAR[cs.year];
-  const byId = id => y.groups.find(g => g.id === id);
-  const numbered = y.groups.filter(g => /^\d+$/.test(g.id));
+  const source = groupsFor(cs.year, cs.basis);
+  const byId = id => source.find(g => g.id === id);
+  const numbered = source.filter(g => /^\d+$/.test(g.id));
   let lead;
   if (cs.merge) {
     const e = byId('external'), u = byId('unassigned');
@@ -292,7 +294,7 @@ function renderGroupPanel() {
   $('group-note').textContent = groupNote(g.id, cs.year);
   $('group-breakdown-title').textContent = T.clusters.breakdown(`${groupName(g.id)} · ${cs.year}`);
 
-  const key = `${cs.year}|${g.id}|${cs.merge}`;
+  const key = `${cs.year}|${g.id}|${cs.merge}|${cs.basis}`;
   const rebuild = key !== cs.panelKey;
   cs.panelKey = key;
   renderDonut(g, rebuild);
@@ -414,6 +416,10 @@ function regroupClusters() {
   $('group-select').innerHTML = cs.groups.map(g => `<option value="${g.id}">${esc(groupName(g.id))}</option>`).join('');
   const nat = YEAR[cs.year].national;
   $('clusters-lead').textContent = T.clusters.lead(cs.year, fmt(nat.valid));
+  const basis = YEAR[cs.year].areaBasis;
+  $('basis-note').textContent = cs.basis === 'area' && basis
+    ? T.clusters.basisNote(pct(basis.statistical_area / nat.valid, 0), pct(basis.locality_fallback / nat.valid, 1))
+    : T.clusters.basisLocalityNote;
   renderClusterLegend();
   renderClusterChart();
   renderClusterTable();
@@ -429,6 +435,10 @@ function setClusterYear(year) {
 }
 
 function initClusters() {
+  if (DATA.years[LATEST].areaGroups) {
+    segmented($('cluster-basis'), [{ value: 'area', label: T.clusters.basisArea }, { value: 'locality', label: T.clusters.basisLocality }],
+      cs.basis, v => { cs.basis = v; regroupClusters(); });
+  }
   segmented($('cluster-year'), YEARS.map(y => ({ value: String(y), label: String(y) })), String(cs.year), setClusterYear);
   $('merge-groups').addEventListener('change', e => { cs.merge = e.target.checked; regroupClusters(); });
   $('cluster-reset').addEventListener('click', () => { cs.locked = cs.hover = cs.hoverGroup = null; updateClusters(); });

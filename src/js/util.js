@@ -25,10 +25,12 @@ const YEAR = Object.fromEntries(YEARS.map(year => {
     valid: sum(d.groups.map(g => g.valid)),
     votes: d.parties.map((_, i) => sum(d.groups.map(g => g.votes[i]))),
   };
-  return [year, { year, parties: d.parties, groups: d.groups, blocMembers, national }];
+  return [year, { year, parties: d.parties, groups: d.groups, areaGroups: d.areaGroups, areaBasis: d.areaBasis, blocMembers, national }];
 }));
 
-const groupById = (year, id) => (id === 'national' ? YEAR[year].national : YEAR[year].groups.find(g => g.id === id));
+const groupsFor = (year, basis) => (basis === 'area' && YEAR[year].areaGroups) || YEAR[year].groups;
+const groupById = (year, id, basis = 'locality') =>
+  (id === 'national' ? YEAR[year].national : groupsFor(year, basis).find(g => g.id === id));
 
 function groupName(id, short = false) {
   if (id === 'national') return short ? T.nationalShort : T.national;

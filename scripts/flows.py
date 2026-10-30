@@ -34,6 +34,7 @@ EXTERNAL = 9999
 NONVOTE = 'nonvote'
 OTHER = 'other_lists'
 BOOTSTRAP = 60
+MIN_LOCATED = 0.95
 SEED = 2026
 
 
@@ -62,28 +63,67 @@ def category_order(year, level, parties):
     return cats + [NONVOTE]
 
 
-def tabulate(year, level, parties):
-    """Return categories, per-settlement counts (incl. non-voters) and national totals."""
+def read_areas(year):
+    path = OUT / str(year) / 'areas_wide.csv'
+    if not path.exists():
+        return None
+    with path.open(encoding='utf-8', newline='') as f:
+        return list(csv.DictReader(f))
+
+
+def unit_keys(areas22, areas26):
+    """Use statistical areas as units inside a locality when at least MIN_LOCATED of its
+    eligible voters were located in both years; otherwise the whole locality is one unit."""
+    def located_share(rows):
+        total, located = defaultdict(int), defaultdict(int)
+        for r in rows:
+            loc, e = int(r['settlement_code']), int(r['eligible'])
+            total[loc] += e
+            if r['stat11']:
+                located[loc] += e
+        return {loc: located[loc] / total[loc] if total[loc] else 0 for loc in total}
+    a, b = located_share(areas22), located_share(areas26)
+    return {loc for loc in a if a[loc] >= MIN_LOCATED and b.get(loc, 0) >= MIN_LOCATED}
+
+
+def tabulate(year, level, parties, split=frozenset()):
+    """Return categories, per-unit counts (incl. non-voters) and national totals."""
     codes, rows = read_settlements(year)
     cat_of = categorise(year, level, parties)
     cats = category_order(year, level, parties)
     index = {c: i for i, c in enumerate(cats)}
-    units, national = {}, [0] * len(cats)
+    national = [0] * len(cats)
     eligible_total = 0
     for r in rows:
-        counts = [0] * len(cats)
+        eligible_total += int(r['eligible'])
+        for code in codes:
+            national[index[cat_of(code)]] += int(r[code])
+    national[index[NONVOTE]] = eligible_total - sum(national)
+
+    unit_rows = []
+    areas = read_areas(year) if split else None
+    for r in areas or rows:
+        loc = int(r['settlement_code'])
+        if loc == EXTERNAL:
+            continue
+        sa = r.get('stat11', '') if loc in split else ''
+        if loc in split and not sa:
+            continue  # the small unlocated remainder of a split locality
+        unit_rows.append(((loc, sa), r))
+    units = {}
+    for key, r in unit_rows:
+        eligible, counts = units.get(key, (0, [0] * len(cats)))
         for code in codes:
             counts[index[cat_of(code)]] += int(r[code])
-        eligible = int(r['eligible'])
-        eligible_total += eligible
-        for i, v in enumerate(counts):
-            national[i] += v
-        if int(r['settlement_code']) == EXTERNAL or eligible <= 0:
+        eligible += int(r['eligible'])
+        units[key] = (eligible, counts)
+    for key, (eligible, counts) in list(units.items()):
+        if eligible <= 0:
+            del units[key]
             continue
+        valid = sum(counts)
         # Abstention and invalid ballots are grouped as "did not cast a valid vote".
-        counts[index[NONVOTE]] = max(0, eligible - int(r['valid']))
-        units[int(r['settlement_code'])] = (eligible, counts)
-    national[index[NONVOTE]] = eligible_total - sum(national)
+        counts[index[NONVOTE]] = max(0, eligible - valid)
     return cats, units, national
 
 
@@ -174,8 +214,10 @@ def percentile(values, q):
 
 
 def estimate(level, parties):
-    rows22, units22, nat22 = tabulate(2022, level, parties)
-    cols26, units26, nat26 = tabulate(2026, level, parties)
+    areas22, areas26 = read_areas(2022), read_areas(2026)
+    split = frozenset(unit_keys(areas22, areas26)) if areas22 and areas26 else frozenset()
+    rows22, units22, nat22 = tabulate(2022, level, parties, split)
+    cols26, units26, nat26 = tabulate(2026, level, parties, split)
     keys = sorted(set(units22) & set(units26))
     xs = [[v / units22[k][0] for v in units22[k][1]] for k in keys]
     ys = [[v / units26[k][0] for v in units26[k][1]] for k in keys]
@@ -207,7 +249,7 @@ def estimate(level, parties):
         'sources': [{'id': c, 'total': n} for c, n in zip(rows22, nat22)],
         'targets': [{'id': c, 'total': n} for c, n in zip(cols26, nat26)],
         'flows': flows,
-        'diagnostics': {'settlements': len(keys), 'weighted_r2': fit_r2, 'bootstrap_replicates': BOOTSTRAP,
+        'diagnostics': {'units': len(keys), 'split_localities': len(split), 'weighted_r2': fit_r2, 'bootstrap_replicates': BOOTSTRAP,
                         'raw_transition': [[round(v, 4) for v in row] for row in T]},
     }
 

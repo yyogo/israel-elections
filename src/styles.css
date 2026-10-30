@@ -75,6 +75,7 @@ select { border: 1px solid var(--line); background: white; border-radius: 6px; p
 .selection-banner .pin { font-size: 12px; }
 .swatch { width: 9px; height: 18px; border-radius: 2px; flex: none; display: inline-block; vertical-align: middle; }
 .swatch.big { width: 12px; height: 24px; }
+.basis-note { padding: 0 16px 10px; margin-top: -4px; }
 .hint { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 12px; color: var(--muted); padding: 2px 16px 10px; }
 .axis { fill: var(--muted); font: 12px var(--font); }
 .gridline { stroke: #fff; stroke-opacity: .35; pointer-events: none; }

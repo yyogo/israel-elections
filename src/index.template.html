@@ -30,6 +30,7 @@
   <div class="panel">
     <div class="toolbar">
       <div class="segmented" id="cluster-year" role="group"></div>
+      <div class="segmented" id="cluster-basis" role="group"></div>
       <p class="encoding" id="cluster-encoding"></p>
       <div class="toolbar-end">
         <label class="check"><input id="merge-groups" type="checkbox"><span data-i18n="clusters.merge"></span></label>
@@ -41,6 +42,7 @@
         <div class="selection-banner" id="selection-banner" aria-live="polite"></div>
         <div class="chart-area"><svg id="cluster-chart" role="img"></svg></div>
         <div class="hint"><span><span data-i18n="clusters.low"></span> · <span data-i18n="clusters.high"></span></span><span data-i18n="clusters.hint"></span></div>
+        <p class="basis-note note" id="basis-note"></p>
       </div>
       <aside class="group-panel">
         <div class="group-head">
@@ -81,7 +83,7 @@
     <div class="panel-head">
       <div>
         <h3 data-i18n="trends.flowsTitle"></h3>
-        <p class="muted" data-i18n="trends.flowsLead"></p>
+        <p class="muted" id="flows-lead"></p>
       </div>
       <div class="toolbar-end">
         <div class="segmented" id="flow-level" role="group"></div>
@@ -148,7 +150,7 @@
     <h3>הנתונים</h3>
     <p>תוצאות הבחירות לפי קלפי של ועדת הבחירות המרכזית לשנים 2022 ו־2026, ומדד חברתי־כלכלי ליישובים של הלמ״ס (2021). כל הקולות הכשרים נשמרו. סכום הרשימות בכל קלפי נבדק מול מספר הקולות הכשרים, ותוצאות 2022 נבדקו גם מול קובץ התוצאות לפי יישוב.</p>
     <h3>אשכולות</h3>
-    <p>כל קלפי מקבלת את האשכול של היישוב שבו היא נמצאת; אין כאן הבחנה בין שכונות בתוך עיר, ואין הסקה על הכנסה של מצביעים בודדים. לכן שכונות אמידות בערים גדולות נספרות באשכול של העיר, ואשכול 10 כולל רק שלושה יישובים (סביון, כפר שמריהו וארסוף). קולות המעטפות החיצוניות (כ־450 אלף בכל מערכת) והיישובים שאינם בקובץ הלמ״ס מוצגים בנפרד, לפני אשכול 1, ללא דירוג. עמודת ״ארצי״ מציגה את כלל הקולות; הרוחב שלה קבוע ואינו מייצג מספר קולות.</p>
+    <p>בתצוגה ״לפי שכונה״ כל קלפי מקבלת את האשכול של האזור הסטטיסטי של הלמ״ס שבו נמצא מקום הקלפי, ב־81 הערים שהלמ״ס מחלקת לאזורים מדורגים. מיקום הקלפיות לקוח מקובצי ועדת הבחירות (2026: קואורדינטות רשמיות; 2022: התאמה לפי שם מקום הקלפי, כ־90% מהקולות בערים אלה). מקום הקלפי משמש קירוב למקום מגורי המצביעים. ביתר היישובים, ובתצוגה ״לפי יישוב״, כל קלפי מקבלת את אשכול היישוב כולו, כך שבתצוגה זו אשכול 10 כולל רק שלושה יישובים (סביון, כפר שמריהו וארסוף). אין כאן הסקה על הכנסה של מצביעים בודדים. קולות המעטפות החיצוניות (כ־450 אלף בכל מערכת) והיישובים שאינם בקובץ הלמ״ס מוצגים בנפרד, לפני אשכול 1, ללא דירוג. עמודת ״ארצי״ מציגה את כלל הקולות; הרוחב שלה קבוע ואינו מייצג מספר קולות.</p>
     <h3>גושים</h3>
     <p>החלוקה לגושים נועדה להצגה בלבד ואינה תחזית לקואליציה. הרכב הרשימות השתנה בין 2022 ל־2026 (למשל הציונות הדתית ועוצמה יהודית רצו יחד ב־2022 ובנפרד ב־2026), ולכן השוואה בין שנים נעשית ברמת הגושים או בעזרת מודל המעברים. אותיות הרשימות אינן מזהה קבוע: ״פה״ הייתה יש עתיד ב־2022 ורשימה קטנה אחרת ב־2026.</p>
     <h3>מעברי קולות משוערים</h3>
@@ -159,7 +161,8 @@
     <h3>מקורות</h3>
     <ul>
       <li>ועדת הבחירות המרכזית: תוצאות לפי קלפי (2022, 2026) ולפי יישוב (2022).</li>
-      <li>הלשכה המרכזית לסטטיסטיקה: אפיון יישובים לפי הרמה החברתית־כלכלית של האוכלוסייה, 2021.</li>
+      <li>הלשכה המרכזית לסטטיסטיקה: אפיון יישובים ואזורים סטטיסטיים לפי הרמה החברתית־כלכלית של האוכלוסייה, 2021 (פרסום 24/230); גבולות אזורים סטטיסטיים.</li>
+      <li>מיקומי קלפיות: ועדת הבחירות המרכזית; רשימת מקומות הקלפי ל־2022 בעיבוד הראל קין (<a href="https://github.com/harelc/elections-vote-transfer">elections-vote-transfer</a>, CC BY-NC-SA 4.0).</li>
       <li>שמות ואותיות רשימות: <a href="https://www.israelielections.com/2026/results/">israelielections.com</a>. סמלי המפלגות: <a href="https://polimeter.co.il/">פולימטר</a> (נטענים מהרשת).</li>
       <li>תרשימים: <a href="https://echarts.apache.org/">Apache ECharts</a> 5.6.0 (רישיון Apache 2.0).</li>
     </ul>
@@ -170,7 +173,7 @@
     <h3>Data</h3>
     <p>Central Elections Committee ballot-box results for 2022 and 2026, and the CBS locality socioeconomic index (2021). All valid votes are kept. Every ballot box is checked so that its list votes sum to its valid votes, and the 2022 totals are also checked against the official per-locality results file.</p>
     <h3>Clusters</h3>
-    <p>Each ballot box gets the cluster of the locality it is in. Neighbourhoods inside a city are not distinguished, and nothing here says anything about individual voters' income. Affluent neighbourhoods of large cities therefore count in their city's cluster, and cluster 10 has only three localities (Savyon, Kfar Shmaryahu and Arsuf). External-envelope votes (about 450k in each election) and localities missing from the CBS file are shown separately, before cluster 1, and are not ranked. The "All" column shows every valid vote; its width is fixed and does not represent a vote count.</p>
+    <p>In the "by neighbourhood" view, each ballot box takes the cluster of the CBS statistical area its polling place is in, in the 81 municipalities CBS divides into ranked areas. Polling-place locations come from the Central Elections Committee files (2026: official coordinates; 2022: matched by polling-place name, about 90% of votes in those cities). The polling place stands in for where its voters live. Elsewhere, and in the "by locality" view, a box takes its whole locality's cluster; in that view cluster 10 has only three localities (Savyon, Kfar Shmaryahu and Arsuf). Nothing here says anything about individual voters' income. External-envelope votes (about 450k in each election) and localities missing from the CBS file are shown separately, before cluster 1, and are not ranked. The "All" column shows every valid vote; its width is fixed and does not represent a vote count.</p>
     <h3>Blocs</h3>
     <p>Blocs are a presentation grouping, not a coalition forecast. Lists changed between 2022 and 2026 (Religious Zionism and Otzma Yehudit ran jointly in 2022 and separately in 2026), so cross-year comparisons use blocs or the flow model. Ballot letters are not stable identifiers: "פה" was Yesh Atid in 2022 and a different, small list in 2026.</p>
     <h3>Estimated vote flows</h3>
@@ -181,7 +184,8 @@
     <h3>Sources</h3>
     <ul>
       <li>Central Elections Committee: results by ballot box (2022, 2026) and by locality (2022).</li>
-      <li>Central Bureau of Statistics: characterization of localities by socioeconomic level, 2021.</li>
+      <li>Central Bureau of Statistics: characterization of localities and statistical areas by socioeconomic level, 2021 (publication 24/230); statistical-area boundaries.</li>
+      <li>Polling-place locations: Central Elections Committee; 2022 polling-place list compiled by Harel Cain (<a href="https://github.com/harelc/elections-vote-transfer">elections-vote-transfer</a>, CC BY-NC-SA 4.0).</li>
       <li>List names and letters: <a href="https://www.israelielections.com/2026/results/">israelielections.com</a>. Party logos: <a href="https://polimeter.co.il/">Polimeter</a> (loaded remotely).</li>
       <li>Charts: <a href="https://echarts.apache.org/">Apache ECharts</a> 5.6.0 (Apache 2.0 licence).</li>
     </ul>

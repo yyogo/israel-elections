@@ -37,7 +37,12 @@
           "valid": 80
         }
       ],
-      "matches_previous_cluster_controls": true
+      "matches_previous_cluster_controls": true,
+      "area_basis_valid_votes": {
+        "locality": 1508331,
+        "locality_fallback": 320702,
+        "statistical_area": 2935709
+      }
     },
     "2026": {
       "year": 2026,
@@ -68,7 +73,12 @@
           "valid": 128
         }
       ],
-      "matches_previous_cluster_controls": true
+      "matches_previous_cluster_controls": true,
+      "area_basis_valid_votes": {
+        "locality": 1879695,
+        "locality_fallback": 11515,
+        "statistical_area": 3799472
+      }
     }
   }
 }

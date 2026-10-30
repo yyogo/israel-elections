@@ -58,6 +58,14 @@ def build_data():
             s['years'][year] = [int(row['eligible']), int(row['voters']), int(row['valid'])] + votes
         assert sum(g['valid'] for g in groups.values()) == meta['years'][str(year)]['valid']
         data['years'][year] = {'parties': parties + [meta['residual']], 'groups': list(groups.values())}
+        # Neighbourhood basis: statistical-area clusters inside divided municipalities.
+        area_path = DERIVED / str(year) / 'area_clusters_wide.csv'
+        if area_path.exists():
+            data['years'][year]['areaGroups'] = [
+                {'id': GROUP_IDS[row['group']], 'eligible': int(row['eligible']), 'voters': int(row['voters']),
+                 'valid': int(row['valid']), 'votes': display_votes(row, parties)} for row in read_csv(area_path)]
+            audit = json.loads((DERIVED / str(year) / 'audit.json').read_text(encoding='utf-8'))
+            data['years'][year]['areaBasis'] = audit['area_basis_valid_votes']
     data['settlements'] = sorted(data['settlements'].values(), key=lambda s: s['code'])
     data['flows'] = json.loads((DERIVED / 'flows.json').read_text(encoding='utf-8'))
     for level in data['flows'].values():

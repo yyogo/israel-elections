@@ -31,6 +31,21 @@ between 0 and 1, not percentage points. Blank cluster means no cluster assignmen
 - `unassigned_settlements.csv`: settlement-wide rows with no LMS match; excludes 9999.
 - `audit.json`: totals, reconciliation outcomes, coverage, and cluster-10 constituent totals.
 
+- `ballot_area_assignment.csv`: one row per ballot box: `stat11` (CBS SA code, when located
+  in a divided municipality), `area_cluster`, `basis` (`statistical_area`, `locality`,
+  `locality_fallback`) and the `location_source` of the crosswalk.
+- `area_clusters_wide.csv`: like `clusters_wide.csv` but grouped by neighbourhood cluster,
+  with eligible/voters/invalid/valid controls.
+- `areas_wide.csv`: one row per (settlement_code, stat11); `stat11` is blank for undivided
+  localities and for unlocated boxes in divided ones.
+
+## Geographic crosswalk
+
+- `geo/ballot_areas_<year>.csv`: ballot box → polling place, 2022 venue and matched 2026
+  venue, address, ITM x/y, `location_source`, `area_locality`, `stat11`, `area_method`
+  (`inside`, `nearest_same_locality`, `outside_locality`, `no_coordinates`,
+  `locality_has_no_areas`). Built offline by `scripts/geo/build_ballot_areas.py`.
+
 ## Shared derived files
 
 - `party_mapping.csv`: year, ballot_code, English/Hebrew mapped name, presentation bloc

@@ -34,6 +34,14 @@ const url = pathToFileURL(path.resolve(__dirname, '../dist/index.html')).href;
     await page.locator('#cluster-legend [data-bloc="0"]').click();
     await page.locator('h1').hover();
     assert.ok((await page.locator('#selection-banner').textContent()).includes('גוש נתניהו'));
+    // Neighbourhood basis is the default; locality basis must still reproduce the classic view.
+    assert.equal(await page.getAttribute('#cluster-basis [data-value="area"]', 'aria-pressed'), 'true');
+    await page.locator('#cluster-basis [data-value="locality"]').click();
+    await page.selectOption('#group-select', '10');
+    assert.ok((await page.locator('#group-summary').textContent()).includes('4,551'));
+    await page.locator('#cluster-basis [data-value="area"]').click();
+    await page.selectOption('#group-select', '10');
+    assert.ok((await page.locator('#group-summary').textContent()).includes('20,636'));
     await page.locator('#cluster-year [data-value="2022"]').click();
     assert.ok((await page.locator('#clusters-lead').textContent()).includes('4,764,742'));
     await page.selectOption('#group-select', 'national');

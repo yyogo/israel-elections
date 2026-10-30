@@ -40,6 +40,33 @@ Party/list names were mapped for elected lists used in the delivered charts. All
 lists remain in the raw and derived tables; their unmapped names are blank, with an
 explicit `name_status`. Do not interpret their `other_lists` bucket as an ideological bloc.
 
+## Neighbourhood clusters (statistical areas)
+
+The "by neighbourhood" view replaces the locality cluster with the cluster of the CBS
+statistical area (SA) in which the ballot box's polling place is located, for the 81
+municipalities that CBS divides into clustered SAs (Table C of publication 24/230).
+
+1. 2026: the CEC ballot-box list links each box to its polling place; the CEC polling-place
+   list gives ITM coordinates. 2022: the CEC venue name of each box is matched to a 2026
+   polling place in the same locality, exactly after normalisation (10,369 boxes) or by
+   token overlap ≥ 0.6 with a unique best match (163 boxes). 2,013 boxes stay unlocated.
+2. Point-in-polygon against CBS SA boundaries (2011 codes). Points outside their own
+   locality are snapped to the nearest SA of that locality within 1.5 km.
+3. A box takes its SA's 2021 cluster when its locality is divided and it was located;
+   otherwise it keeps the locality cluster (`basis` in `ballot_area_assignment.csv`).
+
+Coverage (valid votes): 2026 — 3.80M by SA, 12k city votes fall back to the city cluster;
+2022 — 2.94M by SA, 321k fall back (mainly Bnei Brak, Jerusalem, Tel Aviv). Votes outside
+the 81 municipalities (1.5–1.9M, including external envelopes) keep their locality grouping.
+
+Caveats: a polling place stands in for its voters' homes; a station can serve neighbouring
+SAs. SA and locality clusters come from separate CBS tables on the same 1–10 scale. Cluster
+10 stays small (8 SAs, about 21k residents), as in the CBS table.
+
+The flow model uses SAs as units inside the 32 localities where at least 95% of eligible
+voters were located in both years (1,709 units in total, against 1,215 localities). Bloc
+flows changed by at most four points against the locality-only model.
+
 ## Ballot-letter changes between elections
 
 - `פה`: Yesh Atid in 2022; a different, small list in the 2026 export.
