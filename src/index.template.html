@@ -1,1 +1,197 @@
-<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>בחירות 2026 · הצבעה ואשכול חברתי־כלכלי</title><style>__STYLE__</style></head><body><main><header><div><h1>ההצבעה לפי אשכול חברתי־כלכלי</h1><p class="muted">בחירות 2026 · 5,690,682 קולות כשרים · אשכולות הלמ״ס 2021</p></div><span class="tag">כל הרשימות שעברו את אחוז החסימה</span></header><section class="panel"><div class="tools"><p id="encoding"></p><div class="controls"><label><input id="split" type="checkbox">איחוד קבוצות ללא שיוך</label><button class="reset" id="reset">איפוס בחירה</button></div></div><div class="chart-layout"><div class="main-plot"><div class="chart-area"><svg id="chart" role="img" aria-label="הצבעה לפי אשכול חברתי כלכלי"></svg></div><div class="hint"><span>אשכול 1: נמוך · אשכול 10: גבוה</span><span>ריחוף להדגשה · לחיצה לנעילה</span></div></div><aside class="cluster-sidebar"><div class="detail-head"><h2>בתוך הקבוצה</h2><select id="group-select" aria-label="בחירת אשכול"></select></div><div id="group-summary" class="meta"></div><div id="mini-chart" role="img" aria-label="התפלגות הקולות בקבוצה"></div><div class="cluster-legend" id="cluster-legend" aria-label="בחירת קבוצה"></div><div class="pie-mini-foot"><span class="meta" id="pie-caption"></span><button id="expand-pie" class="reset" aria-expanded="false" aria-controls="pie-details">הגדלה ופירוט ↓</button></div></aside></div><p class="legend-context" id="legend-context"></p><div class="legend" id="legend" aria-label="בחירת גוש או רשימה"></div></section><details id="pie-details"><summary>התפלגות הקולות בקבוצה · תצוגה מורחבת</summary><div class="large-pie-panel"><div id="large-chart" role="img" aria-label="התפלגות קולות מורחבת"></div><div id="pie-legend"></div></div></details><details><summary>טבלת נתונים מלאה</summary><div class="scroll"><table id="table"></table></div></details><details><summary>מקורות, שיוך וגודל הקבוצות</summary><div class="method"><p>התוצאות חושבו מקובץ הקלפיות שסופק, לפי סמל יישוב, וחוברו לקובץ הלמ״ס לפי אותו סמל. כל קלפי מקבלת את אשכול היישוב; אין כאן הבחנה בין שכונות או הסקה על הכנסה של מצביעים בודדים.</p><p>״אחר״ כוללת 449,357 קולות במעטפות חיצוניות. ״ללא אשכול״ כוללת 43,003 קולות ב־41 יישובים ללא התאמה בלמ״ס. שתי הקבוצות מוצגות לפני אשכול 1, ללא משמעות של דירוג. אפשר לאחד אותן באמצעות תיבת הסימון.</p><p>״יתר הרשימות״ כוללת רשימות שלא עברו את אחוז החסימה. כל האחוזים מחושבים מכלל הקולות הכשרים בקבוצה. צבעים דומים מציינים גושים לצורכי הצגה, ואינם תחזית לקואליציה.</p><p>סמלי המפלגות: <a href="https://polimeter.co.il/">פולימטר</a> · בדיקת שמות ואותיות: <a href="https://www.israelielections.com/2026/results/">תוצאות 2026</a>. התמונות דורשות חיבור לאינטרנט; שם הרשימה ואותיותיה מוצגים גם בלעדיהן.</p></div></details><div class="foot">מקור: נתוני הקלפיות שסופקו ואשכולות יישובים של הלמ״ס לשנת 2021. נשמרו כל הקולות הכשרים.</div></main><script>__ECHARTS__</script><script>__APP__</script></body></html>
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>בחירות לכנסת · 2022 ו־2026</title>
+<meta name="description" content="Israeli Knesset election results 2022 and 2026 by socioeconomic cluster, estimated vote flows and locality trends.">
+<style>__STYLE__</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-row">
+    <div>
+      <h1 data-i18n="title"></h1>
+      <p class="muted" data-i18n="subtitle"></p>
+    </div>
+    <a id="lang-switch" class="lang-switch" href="?lang=en"></a>
+  </div>
+  <nav class="wrap tabs" id="tab-nav" role="tablist"></nav>
+</header>
+
+<main class="wrap">
+
+<!-- ======================= Clusters ======================= -->
+<section id="tab-clusters" class="tab" hidden>
+  <div class="section-head">
+    <h2 data-i18n="clusters.heading"></h2>
+    <p class="muted" id="clusters-lead"></p>
+  </div>
+  <div class="panel">
+    <div class="toolbar">
+      <div class="segmented" id="cluster-year" role="group"></div>
+      <p class="encoding" id="cluster-encoding"></p>
+      <div class="toolbar-end">
+        <label class="check"><input id="merge-groups" type="checkbox"><span data-i18n="clusters.merge"></span></label>
+        <button type="button" class="ghost" id="cluster-reset" data-i18n="clusters.reset"></button>
+      </div>
+    </div>
+    <div class="chart-layout">
+      <div class="main-plot">
+        <div class="selection-banner" id="selection-banner" aria-live="polite"></div>
+        <div class="chart-area"><svg id="cluster-chart" role="img"></svg></div>
+        <div class="hint"><span><span data-i18n="clusters.low"></span> · <span data-i18n="clusters.high"></span></span><span data-i18n="clusters.hint"></span></div>
+      </div>
+      <aside class="group-panel">
+        <div class="group-head">
+          <h3 data-i18n="clusters.inGroup"></h3>
+          <select id="group-select"></select>
+        </div>
+        <div id="group-summary" class="group-summary"></div>
+        <div id="group-donut" role="img"></div>
+        <div class="group-foot">
+          <span class="note" id="group-note"></span>
+          <button type="button" class="ghost" id="expand-breakdown" aria-controls="group-breakdown" aria-expanded="false" data-i18n="clusters.expand"></button>
+        </div>
+      </aside>
+    </div>
+    <p class="legend-context" id="cluster-legend-context"></p>
+    <div class="legend" id="cluster-legend"></div>
+    <p class="legend-foot note">* <span data-i18n="clusters.belowThreshold"></span></p>
+  </div>
+  <details id="group-breakdown" class="panel-details">
+    <summary id="group-breakdown-title"></summary>
+    <div id="group-ranking" class="ranking"></div>
+  </details>
+  <details class="panel-details">
+    <summary data-i18n="clusters.table"></summary>
+    <div class="scroll"><table id="cluster-table" class="data-table"></table></div>
+  </details>
+</section>
+
+<!-- ======================= Trends ======================= -->
+<section id="tab-trends" class="tab" hidden>
+  <div class="section-head">
+    <h2 data-i18n="trends.heading"></h2>
+    <p class="muted" data-i18n="trends.lead"></p>
+  </div>
+  <div class="kpis" id="trend-kpis"></div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h3 data-i18n="trends.flowsTitle"></h3>
+        <p class="muted" data-i18n="trends.flowsLead"></p>
+      </div>
+      <div class="toolbar-end">
+        <div class="segmented" id="flow-level" role="group"></div>
+        <label class="check"><input id="flow-nonvoters" type="checkbox" checked><span data-i18n="trends.showNonvoters"></span></label>
+      </div>
+    </div>
+    <p class="caveat" id="sankey-caveat" data-i18n="trends.listCaveat" hidden></p>
+    <div class="chart-area"><svg id="sankey" role="img"></svg></div>
+    <p class="note" id="sankey-note"></p>
+    <details class="inline-details">
+      <summary data-i18n="clusters.table"></summary>
+      <div class="scroll"><table id="flow-table" class="data-table compact"></table></div>
+    </details>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3><span data-i18n="trends.metric"></span></h3>
+      <div class="segmented wrap-ok" id="trend-metric" role="group"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <h4 data-i18n="trends.byClusterTitle"></h4>
+        <p class="muted small" data-i18n="trends.byClusterLead"></p>
+        <div id="by-cluster" class="echart"></div>
+      </div>
+      <div>
+        <h4 data-i18n="trends.scatterTitle"></h4>
+        <p class="muted small" data-i18n="trends.scatterLead"></p>
+        <div id="scatter" class="echart square"></div>
+        <div class="scatter-legend" id="scatter-legend"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= Localities ======================= -->
+<section id="tab-settlements" class="tab" hidden>
+  <div class="section-head">
+    <h2 data-i18n="settlements.heading"></h2>
+    <p class="muted" data-i18n="settlements.lead"></p>
+  </div>
+  <div class="settlement-layout">
+    <div class="panel">
+      <div class="search">
+        <input id="settlement-search" type="search" autocomplete="off" lang="he" dir="auto">
+        <ul id="settlement-results" class="search-results" hidden></ul>
+      </div>
+      <article id="settlement-detail" class="settlement-detail" hidden></article>
+    </div>
+    <div class="panel">
+      <h3 data-i18n="settlements.swingsTitle"></h3>
+      <p class="muted small" data-i18n="settlements.swingsLead"></p>
+      <div class="segmented wrap-ok" id="swing-metric" role="group"></div>
+      <div id="swings" class="swings"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= About ======================= -->
+<section id="tab-about" class="tab prose" hidden>
+  <div data-lang="he">
+    <h2>שיטה ומקורות</h2>
+    <h3>הנתונים</h3>
+    <p>תוצאות הבחירות לפי קלפי של ועדת הבחירות המרכזית לשנים 2022 ו־2026, ומדד חברתי־כלכלי ליישובים של הלמ״ס (2021). כל הקולות הכשרים נשמרו. סכום הרשימות בכל קלפי נבדק מול מספר הקולות הכשרים, ותוצאות 2022 נבדקו גם מול קובץ התוצאות לפי יישוב.</p>
+    <h3>אשכולות</h3>
+    <p>כל קלפי מקבלת את האשכול של היישוב שבו היא נמצאת; אין כאן הבחנה בין שכונות בתוך עיר, ואין הסקה על הכנסה של מצביעים בודדים. לכן שכונות אמידות בערים גדולות נספרות באשכול של העיר, ואשכול 10 כולל רק שלושה יישובים (סביון, כפר שמריהו וארסוף). קולות המעטפות החיצוניות (כ־450 אלף בכל מערכת) והיישובים שאינם בקובץ הלמ״ס מוצגים בנפרד, לפני אשכול 1, ללא דירוג. עמודת ״ארצי״ מציגה את כלל הקולות; הרוחב שלה קבוע ואינו מייצג מספר קולות.</p>
+    <h3>גושים</h3>
+    <p>החלוקה לגושים נועדה להצגה בלבד ואינה תחזית לקואליציה. הרכב הרשימות השתנה בין 2022 ל־2026 (למשל הציונות הדתית ועוצמה יהודית רצו יחד ב־2022 ובנפרד ב־2026), ולכן השוואה בין שנים נעשית ברמת הגושים או בעזרת מודל המעברים. אותיות הרשימות אינן מזהה קבוע: ״פה״ הייתה יש עתיד ב־2022 ורשימה קטנה אחרת ב־2026.</p>
+    <h3>מעברי קולות משוערים</h3>
+    <p>תרשים המעברים מבוסס על הסקה אקולוגית: לכל אחד מ־1,215 היישובים שהופיעו בשתי מערכות הבחירות חושב שיעור כל גוש (או רשימה) ושיעור מי שלא הצביעו מתוך בעלי זכות הבחירה. לאחר מכן נמצאה מטריצת מעבר ארצית אחת (שורות שסכומן 100%, ללא ערכים שליליים) שמסבירה בצורה הטובה ביותר את תוצאות 2026 בכל יישוב לפי תוצאות 2022 (ריבועים פחותים משוקללים בגודל היישוב). את המטריצה תיקנו (raking) כך שהסכומים יתאימו לתוצאות הארציות, כולל המעטפות החיצוניות. טווחי האי־ודאות (90%) חושבו בבוטסטרפ על היישובים.</p>
+    <p>המודל מניח שמצביעי רשימה מסוימת התנהגו באופן דומה בכל מקום. ההנחה סבירה לגושים ולרשימות עם בסיס גאוגרפי מובחן (ערביות, חרדיות), וחלשה יותר לרשימות שמצביעיהן גרים באותם יישובים. שינויים בפנקס הבוחרים (מצביעים חדשים, נפטרים, מעברי דירה) אינם מזוהים: המודל מתייחס לבעלי זכות הבחירה בכל יישוב כאוכלוסייה אחת. גם הטווחים אינם מכסים טעות במבנה המודל.</p>
+    <h3>שיעור הצבעה</h3>
+    <p>שיעור ההצבעה ביישוב ובאשכול מחושב ממספר המצביעים בקלפיות היישוב, ואינו כולל את קולות המעטפות החיצוניות של תושביו. לכן הוא נמוך מעט מהשיעור האמיתי, בערך באותה מידה בשתי מערכות הבחירות.</p>
+    <h3>מקורות</h3>
+    <ul>
+      <li>ועדת הבחירות המרכזית: תוצאות לפי קלפי (2022, 2026) ולפי יישוב (2022).</li>
+      <li>הלשכה המרכזית לסטטיסטיקה: אפיון יישובים לפי הרמה החברתית־כלכלית של האוכלוסייה, 2021.</li>
+      <li>שמות ואותיות רשימות: <a href="https://www.israelielections.com/2026/results/">israelielections.com</a>. סמלי המפלגות: <a href="https://polimeter.co.il/">פולימטר</a> (נטענים מהרשת).</li>
+      <li>תרשימים: <a href="https://echarts.apache.org/">Apache ECharts</a> 5.6.0 (רישיון Apache 2.0).</li>
+    </ul>
+    <p>הנתונים והקוד: <a href="https://github.com/yyogo/israel-elections">github.com/yyogo/israel-elections</a>.</p>
+  </div>
+  <div data-lang="en">
+    <h2>Method and sources</h2>
+    <h3>Data</h3>
+    <p>Central Elections Committee ballot-box results for 2022 and 2026, and the CBS locality socioeconomic index (2021). All valid votes are kept. Every ballot box is checked so that its list votes sum to its valid votes, and the 2022 totals are also checked against the official per-locality results file.</p>
+    <h3>Clusters</h3>
+    <p>Each ballot box gets the cluster of the locality it is in. Neighbourhoods inside a city are not distinguished, and nothing here says anything about individual voters' income. Affluent neighbourhoods of large cities therefore count in their city's cluster, and cluster 10 has only three localities (Savyon, Kfar Shmaryahu and Arsuf). External-envelope votes (about 450k in each election) and localities missing from the CBS file are shown separately, before cluster 1, and are not ranked. The "All" column shows every valid vote; its width is fixed and does not represent a vote count.</p>
+    <h3>Blocs</h3>
+    <p>Blocs are a presentation grouping, not a coalition forecast. Lists changed between 2022 and 2026 (Religious Zionism and Otzma Yehudit ran jointly in 2022 and separately in 2026), so cross-year comparisons use blocs or the flow model. Ballot letters are not stable identifiers: "פה" was Yesh Atid in 2022 and a different, small list in 2026.</p>
+    <h3>Estimated vote flows</h3>
+    <p>The flow diagram uses ecological inference. For each of the 1,215 localities present in both elections, we take each bloc's (or list's) share of eligible voters, plus the share who did not cast a valid vote. We then find the single national transition matrix (rows sum to 100%, no negative values) that best predicts every locality's 2026 result from its 2022 result, by least squares weighted by locality size. The matrix is then raked so that its totals match the national results, including external envelopes. The 90% ranges come from bootstrapping over localities.</p>
+    <p>The model assumes that a given list's voters behaved alike wherever they live. That holds reasonably well for blocs and for lists with a distinct geography (Arab and Haredi lists), and less well for lists whose voters live in the same places. Changes to the voter register (new voters, deaths, people moving) cannot be identified: each locality's eligible voters are treated as one population. The ranges do not cover errors in the model itself.</p>
+    <h3>Turnout</h3>
+    <p>Locality and cluster turnout is computed from the locality's own ballot boxes and excludes its residents' external-envelope votes. It is therefore slightly understated, by roughly the same amount in both elections.</p>
+    <h3>Sources</h3>
+    <ul>
+      <li>Central Elections Committee: results by ballot box (2022, 2026) and by locality (2022).</li>
+      <li>Central Bureau of Statistics: characterization of localities by socioeconomic level, 2021.</li>
+      <li>List names and letters: <a href="https://www.israelielections.com/2026/results/">israelielections.com</a>. Party logos: <a href="https://polimeter.co.il/">Polimeter</a> (loaded remotely).</li>
+      <li>Charts: <a href="https://echarts.apache.org/">Apache ECharts</a> 5.6.0 (Apache 2.0 licence).</li>
+    </ul>
+    <p>Data and code: <a href="https://github.com/yyogo/israel-elections">github.com/yyogo/israel-elections</a>.</p>
+  </div>
+</section>
+
+<footer class="site-foot" data-i18n="sources"></footer>
+</main>
+<script>__ECHARTS__</script>
+<script>__APP__</script>
+</body>
+</html>

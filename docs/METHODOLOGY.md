@@ -39,3 +39,35 @@ as a national external-envelope aggregate. No voter-residence reassignment is po
 Party/list names were mapped for elected lists used in the delivered charts. All minor
 lists remain in the raw and derived tables; their unmapped names are blank, with an
 explicit `name_status`. Do not interpret their `other_lists` bucket as an ideological bloc.
+
+## Ballot-letter changes between elections
+
+- `פה`: Yesh Atid in 2022; a different, small list in the 2026 export.
+- `אמת`: Labor in 2022; The Democrats in 2026.
+- `ט`: a combined Religious Zionism–Otzma Yehudit list in 2022; Religious
+  Zionism–Zehut in 2026. Otzma Yehudit is `ב` in 2026.
+- `כן`: National Unity in 2022; do not assume the same list identity in 2026.
+- `ום` (2022) and `ודם` (2026) represent differently composed Arab lists.
+- Joint lists, mergers and withdrawals prevent a naive letter-based vote swing.
+
+The current bloc categories are presentation groupings, not a prediction about
+a future coalition. They are not a ready-made cross-election party crosswalk.
+
+## Estimated vote flows (2022 → 2026)
+
+`scripts/flows.py` estimates how 2022 voters voted in 2026 by ecological inference.
+
+1. Units: the 1,215 localities present in both elections with eligible voters (code 9999 excluded).
+2. Categories: blocs (or displayed lists plus "other lists") and "did not cast a valid vote"
+   (eligible − valid, so invalid ballots count as non-votes). Shares are of eligible voters.
+3. Fit one transition matrix T (rows on the simplex) minimizing Σ w_s‖x_s T − y_s‖², with
+   w_s the mean eligible voters of locality s, by accelerated projected gradient descent.
+4. Rake diag(N₂₀₂₂)·T by iterative proportional fitting to the official national margins
+   of both years (including external envelopes); the 2026 margin is scaled to the 2022 electorate.
+5. Bootstrap localities (60 replicates, fixed seed) for 90% intervals on each row share.
+
+Assumptions and limits: voters of a list behave alike across localities (no contextual
+effects); register churn (new voters, deaths, moves) is folded into each locality's
+electorate; locality turnout excludes external envelopes. Estimates are robust for blocs and
+geographically distinctive lists, and weak for lists with overlapping voter bases. Bootstrap
+intervals capture sampling variation across localities, not model misspecification.

@@ -1,14 +1,11 @@
-# Deploy the static dashboard
+# Deploy
 
-Upload the **contents** of `dist/deployable-site.zip` to a static web host. Its
-`index.html` is at the ZIP root. Do not upload the source takeout ZIP as a website.
+The site is deployed to GitHub Pages by `.github/workflows/pages.yml` on every push to
+`main` (or manually via "Run workflow"). One-time setup: repository Settings → Pages →
+Build and deployment → Source: **GitHub Actions**.
 
-Framework: static HTML / none. Build command: none. Publish directory: the extracted
-site directory. No server, database, credentials or runtime environment variables.
-
-All analysis data and ECharts 5.6.0 are embedded. Party-logo images remain remote;
-missing logos do not remove party names or ballot letters. Preserve the included licenses.
-
-To rebuild after editing source/data, run the three scripts in the root README.
-The Site deployment attempted during this work was not created because Sites was
-not enabled for the workspace. This archive has no hosting binding or Site project ID.
+The workflow verifies the input checksums, reruns the full pipeline and publishes
+`dist/index.html` plus `licenses/`. The page is a single self-contained HTML file
+(data and ECharts embedded), so any static host works: upload `dist/index.html`
+(and the licenses) after running the build commands in the README. Party logos
+load remotely from polimeter.co.il; names and ballot letters show without them.

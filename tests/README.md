@@ -14,5 +14,6 @@ to its executable instead of installing the bundled browser. This is optional;
 the test has no machine-specific executable path.
 
 The test blocks external image requests intentionally, verifies local ECharts loading,
-checks cluster and bloc selection, national-share figures, pie expansion, no hover
-popup, mobile label spacing, and the two intentional gaps between mobile rows.
+checks Hebrew/English modes, cluster and bloc selection, the nationwide reference, the
+year switch, the Sankey at both levels, the scatter, and locality search on a phone viewport.
+If only `playwright-core` is installed it is used instead of `playwright`.

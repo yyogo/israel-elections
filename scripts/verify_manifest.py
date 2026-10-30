@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Check the immutable inputs (raw exports, prior controls, vendored ECharts) against SHA256SUMS."""
 from pathlib import Path
 import hashlib,sys
 ROOT=Path(__file__).resolve().parents[1]

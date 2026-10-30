@@ -24,7 +24,9 @@ jobs:
           python-version: '3.12'
       - name: Rebuild analysis and dashboard
         run: |
+          python3 scripts/verify_manifest.py
           python3 scripts/analyze.py > /dev/null
+          python3 scripts/flows.py
           python3 scripts/build_dashboard.py
       - name: Assemble site
         run: |

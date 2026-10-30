@@ -19,22 +19,31 @@ and valid-vote total; eligible, voter and invalid national control differences a
 Both years' elected-list cluster totals match the independently retained prior CSV controls.
 The complete pipeline emits auditable counts into `data/derived/*/audit.json`.
 
-## Dashboard source proof
+## Pipeline rewrite (repository import)
 
-The extracted source plus regenerated `dashboard-data.json` builds the delivered
-`dist/index.html` byte-for-byte. Its SHA-256 is:
+`scripts/analyze.py` was rewritten for readability. Run against the same raw inputs,
+it regenerates every per-year derived CSV, `audit.json`, `audit_summary.json` and
+`settlement_presence_and_totals_comparison.csv` byte-for-byte identical to the delivered
+takeout. The only intended change is `party_mapping.csv`, which now names five notable
+non-elected lists (2022: Meretz, Balad, Jewish Home; 2026: The Reservists & Economic
+Party, Amcha Yisrael) and uses the bloc ids from `src/parties.json`.
 
-`6bff4e0d1cb0abfc65195b6e32739cebabac4607e839742ea6d620244210ce46`
+`SHA256SUMS` now covers only the immutable inputs: raw exports, the prior cluster
+controls and vendored ECharts. Derived files and `dist/` are rebuilt, not pinned.
 
-The exact delivered HTML was checked in headless Chrome at desktop, 320, 390 and
-768 pixel widths during the dashboard work: offline library loading, cluster selection,
-party/bloc highlighting, expanded pie, no hover tooltips, and national reference counts.
-The final mobile-spacing change was additionally checked at 320 and 390 pixels:
-all adjacent rows touch except for the 12-pixel gaps before cluster 1 and cluster 10;
-axis labels do not overlap and selecting cluster 10 updates the pie.
+## Vote-flow model
 
-The bundled optional browser smoke test can be rerun with Playwright. It is not
-needed to rebuild data or HTML. It requires installing a browser on the new machine.
+`scripts/flows.py` reports a weighted R² of 0.91 (bloc level) and 0.86 (list level)
+over 1,215 localities present in both elections, with 60 bootstrap replicates for
+90% intervals. Raked flows reproduce the official national totals of both years exactly.
+
+## Browser checks
+
+`tests/browser-smoke.cjs` loads the built page with all network requests blocked and
+checks: RTL Hebrew and LTR English modes, cluster chart rendering, hover banner and
+nationwide reference (Likud 20.52% in 2026), bloc pinning, the 2022/2026 switch, the
+nationwide group, the Sankey at bloc and list levels, the locality scatter, and
+locality search at phone width. No page errors are allowed.
 
 ## Not established by these checks
 
@@ -43,12 +52,3 @@ needed to rebuild data or HTML. It requires installing a browser on the new mach
 - Settlement boundary changes or residential assignment of external-envelope votes.
 - Ballot-to-statistical-area assignment or individual voter socioeconomic status.
 - Permanent availability or copyright clearance of remote party-logo hosts.
-
-## Portable takeout rebuild
-
-The completed source ZIP was extracted to a separate location. From a working
-directory outside that project, `verify_manifest.py`, `analyze.py`,
-`build_dashboard.py`, `package_site.py`, and `verify_manifest.py` all passed in sequence.
-The complete unmodified rebuild preserved every delivered file checksum, including
-the deterministic deployment ZIP. This verifies relocation and rebuild on the current
-machine; a different operating system/Python installation has not been tested here.

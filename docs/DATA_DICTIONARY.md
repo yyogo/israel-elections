@@ -33,13 +33,17 @@ between 0 and 1, not percentage points. Blank cluster means no cluster assignmen
 
 ## Shared derived files
 
-- `party_mapping.csv`: year, ballot_code, English/Hebrew mapped name, presentation bloc,
-  elected flag, name_status. Minor-list names remain unmapped rather than guessed.
+- `party_mapping.csv`: year, ballot_code, English/Hebrew mapped name, presentation bloc
+  (`netanyahu`, `change`, `arab`, `other`; `other_lists` when unmapped), elected flag and
+  name_status (`mapped_elected_list`, `mapped_notable_list`, `not_mapped_retained_as_ballot_code`).
 - `settlement_presence_and_totals_comparison.csv`: union of settlement codes, per-year
   names/presence/valid votes, and the same LMS 2021 cluster.
-- `dashboard-data.json`: the exact compact 2026 data consumed by the current dashboard;
-  ten numeric clusters plus unassigned settlements and external envelopes. It displays
-  eleven elected lists plus a residual category. Use long CSVs for all-list analysis.
+- `dashboard-data.json`: the compact data embedded in the dashboard: blocs, per-year
+  displayed lists (named lists plus a residual), per-group eligible/voters/valid and votes,
+  per-locality rows `[eligible, voters, valid, ...votes]` for both years, and the flow model.
+- `flows.json` / `flows.csv`: estimated 2022→2026 flows at `bloc` and `list` level. Each flow
+  has `from`, `to`, raked `value` (2022-electorate scale), `share_of_source` and a 90% bootstrap
+  interval. `nonvote` = did not cast a valid vote; `other_lists` = all lists not in parties.json.
 - `audit_summary.json`: combined audit summary and LMS row count.
 
 ## Raw file inventory
